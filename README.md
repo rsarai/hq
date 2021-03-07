@@ -24,22 +24,3 @@ $ echo foo | python isatty.py
 you are not a tty
 $
 ```
-
-### Scripts
-```python
-from importlib import reload
-import logging
-reload(logging)
-logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s', level=logging.DEBUG, datefmt='%I:%M:%S')
-
-import hq.config as conf
-conf.__dict__
-
-from hq import central
-central.setup_config()
-
-import hq.config as conf
-conf.__dict__
-```
-
-spec = importlib.util.spec_from_file_location("hq.config", "/home/sarai/.config/hq/hq/config.py")
