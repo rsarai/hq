@@ -2,6 +2,7 @@ import os
 import sys
 import appdirs
 import importlib
+import importlib.util
 
 from pathlib import Path
 

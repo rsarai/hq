@@ -25,14 +25,11 @@ class KindleView(Mirror):
 
     def get_items(self):
         for highlight in get_highlights_from_book():
-            yield (
-                self._format_book_name(highlight),
-                node(
-                    heading=dt_heading(
-                        self._format_datetime(highlight),
-                        self._format_header(highlight)
-                    ),
-                    children=[self.render_highligh(highlight)]
-                )
+            yield node(
+                heading=dt_heading(
+                    self._format_datetime(highlight),
+                    self._format_header(highlight)
+                ),
+                children=[self.render_highligh(highlight)]
             )
 

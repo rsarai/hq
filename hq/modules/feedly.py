@@ -12,7 +12,6 @@ from hq.config import Feedly as config
 
 def parse_file(f):
     raw = json.loads(f)
-    import ipdb; ipdb.set_trace()
     for r in raw:
         rid = r['id']
         website = r.get('website', rid)

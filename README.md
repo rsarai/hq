@@ -24,3 +24,12 @@ $ echo foo | python isatty.py
 you are not a tty
 $
 ```
+
+#### TIL (21/03/2021):
+- `os.path.expanduser(path)` On Unix and Windows, return the argument with an initial component of ~ or ~user replaced by that user’s home directory
+
+
+## Todo
+- [ ] Improve `datetime` function to get the time.
+- [ ] Define how to deal with images
+- [ ] Save articles in multiple files
