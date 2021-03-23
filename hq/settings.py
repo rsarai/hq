@@ -6,6 +6,8 @@ import importlib.util
 
 from pathlib import Path
 
+IMAGES_FOLDER = "notion_articles_export/"
+
 def get_config_file_path():
     return "/hq/config/__init__.py"
 

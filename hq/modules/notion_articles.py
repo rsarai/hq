@@ -47,12 +47,8 @@ def md_to_org(raw):
 
 def process():
     notion_files = get_files(config.export_path, "*.md")
-
     for f_path in notion_files:
         images_folder = None
-        if f_path.stem in notion_files:
-            images_folder = f"{f_path.parent.absolute()}/{f_path.stem}"
-
         yield Article(
             raw=md_to_org(f_path.read_text()),
             images_folder=images_folder,

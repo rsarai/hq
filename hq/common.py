@@ -12,6 +12,9 @@ from pathlib import Path
 from orger import Mirror
 from orger import inorganic
 
+from hq.config import SecondBrain as second_brain
+from hq.settings import IMAGES_FOLDER
+
 DEFAULT_GLOB = '*'
 
 def get_files(dir_path, glob=DEFAULT_GLOB, sort=False):
@@ -137,8 +140,16 @@ class SimpleOrgNode(OrgNode):
                 lines.append(x)
             elif "#+" in x:
                 lines.append(x)
+            elif "* " in x:
+                lines.append(x)
             elif x == '':
                 lines.append(x)
+            elif 'file:' in x:
+                x = x.replace('%20', '+')
+                begin = x.split('file:', 1)[0]
+                end = x.split('file:', 1)[1]
+                line = begin + 'file:' + IMAGES_FOLDER + end
+                lines.append(line)
             else:
                 lines.append('-' + (' ' if l > 0 else '') + x)
         return '\n'.join(lines)
@@ -168,6 +179,8 @@ class Replica(Mirror):
     def _run(self, to):
         org_tree = self.make_tree()
         rtree = org_tree.render(level=0)
+        destination = Path(second_brain.export_path + '/' + str(to.stem) + '.org')
 
         to.touch()
         to.write_text(rtree)
+        to.replace(destination)
