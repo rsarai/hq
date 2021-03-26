@@ -218,7 +218,7 @@ function __setup_prompt
     if [[ -n $container_uuid ]] || [[ -f /.dockerenv ]]; then
         PS1="${PS1}${_RV}${_DG}"
     fi
-    PS1="${PS1}$(hostname -f)"
+    PS1="${PS1}$(hostname)"
     PS1="${PS1}${_NC}:${_DY}\w${_NC}"                   # yellow cwd
     PS1="${PS1}\$(_git_active_branch)"                  # git branch name
     PS1="${PS1}${_DC} ⤾\n"                              # cyan wrap char, newline
