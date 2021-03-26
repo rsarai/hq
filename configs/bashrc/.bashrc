@@ -301,3 +301,5 @@ export GEM_HOME="$HOME/gems"
 export PATH="$HOME/gems/bin:$PATH"
 
 alias brain_sync="bash ~/github-projects/second-brain/gitsync.sh new"
+
+alias out="python3 ponto.py"
