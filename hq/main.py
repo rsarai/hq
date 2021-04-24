@@ -7,7 +7,6 @@ Feel free to use your preferred way of managing these packages otherwise.
 """
 
 
-
 from pathlib import Path
 MY_CONFIG = str(Path('~/.config/hq').expanduser())
 

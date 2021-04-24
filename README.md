@@ -2,6 +2,9 @@
 
 [HPI](https://github.com/karlicoss/HPI) got me inspired and I'm trying to play with the idea in smaller scale for myself.
 
+# What is this?
+- This is a interface to deal with all the data that I wanna keep. The main functionality is in `hq/views`.
+
 ### Notes
 
 #### TIL (27/02/2021):
