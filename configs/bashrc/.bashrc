@@ -218,7 +218,7 @@ function __setup_prompt
     if [[ -n $container_uuid ]] || [[ -f /.dockerenv ]]; then
         PS1="${PS1}${_RV}${_DG}"
     fi
-    PS1="${PS1}$(hostname -f)"
+    PS1="${PS1}$(hostname)"
     PS1="${PS1}${_NC}:${_DY}\w${_NC}"                   # yellow cwd
     PS1="${PS1}\$(_git_active_branch)"                  # git branch name
     PS1="${PS1}${_DC} ⤾\n"                              # cyan wrap char, newline
@@ -301,6 +301,7 @@ export GEM_HOME="$HOME/gems"
 export PATH="$HOME/gems/bin:$PATH"
 
 alias brain_sync="bash ~/github-projects/second-brain/gitsync.sh new"
+alias out="python3 ponto.py"
 
 
 export PROMPT_COMMAND='if [ "$(id -u)" -ne 0 ]; then echo "$(date "+%Y-%m-%d.%H:%M:%S") $(pwd) $(history 1)" >> ~/.logs/bash-history.log; fi'
