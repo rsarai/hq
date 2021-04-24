@@ -301,3 +301,6 @@ export GEM_HOME="$HOME/gems"
 export PATH="$HOME/gems/bin:$PATH"
 
 alias brain_sync="bash ~/github-projects/second-brain/gitsync.sh new"
+
+
+export PROMPT_COMMAND='if [ "$(id -u)" -ne 0 ]; then echo "$(date "+%Y-%m-%d.%H:%M:%S") $(pwd) $(history 1)" >> ~/.logs/bash-history.log; fi'
