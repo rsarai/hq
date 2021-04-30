@@ -7,6 +7,11 @@
 
 ### Notes
 
+#### TIL (28/04/2021):
+- You can open a sqlite dataset in readonly mode: https://docs.python.org/3/library/sqlite3.html#sqlite3.connect
+- dataset: databases for lazy people: https://dataset.readthedocs.io/en/latest/
+
+
 #### TIL (27/02/2021):
 - appdirs is a lib to help to deal with directories for storing data
 - pathlib has nice abstractions to deal with paths on the system, especially checking if they exists or create new ones
