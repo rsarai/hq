@@ -1,2 +1,3 @@
 orger
 pytz
+pynubank==2.11.2
