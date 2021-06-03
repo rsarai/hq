@@ -16,7 +16,7 @@ from hq.config import Daylio as config
 timezone = pytz.timezone("America/Recife")
 
 
-def get_file_path():
+def get_file_paths():
     """
         As of now, the export file has all the dataset history,
         so the processing of the latest file should be enough
@@ -41,7 +41,7 @@ class Mood:
 
 
 def process():
-    daylio_file = get_file_path()
+    daylio_file = get_file_paths()
     with open(daylio_file, newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:

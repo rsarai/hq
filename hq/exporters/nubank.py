@@ -35,7 +35,6 @@ def generate_export():
     )
     folder_name = datetime.today().strftime('%Y_%m_%d')
     export_path = config.export_path
-    nubank_export_path = Path(export_path + folder_name)
 
     card_feed = nu.get_card_feed()
     dumper(card_feed, Path(export_path + "/" + folder_name), "card_feed.json")

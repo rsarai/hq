@@ -39,7 +39,7 @@ from hq.config import Habits as config
 timezone = pytz.timezone("America/Recife")
 
 
-def get_db_path():
+def get_file_paths():
     """
         As of now, the export file has all the dataset history,
         so the processing of the latest file should be enough
@@ -48,7 +48,7 @@ def get_db_path():
 
 
 _QUERY = """
-SELECT r.id, r.timestamp, r.value, h.description, h.name
+SELECT DISTINCT r.id, r.timestamp, r.value, h.description, h.name
 FROM Repetitions AS r
 JOIN Habits AS h
 ON r.habit = h.id;
@@ -68,7 +68,7 @@ class Habit:
 
 
 def process():
-    db_path = get_db_path()
+    db_path = get_file_paths()
     with get_readonly_connection(db_path) as conn:
         cur = conn.cursor()
         cur.execute(_QUERY)

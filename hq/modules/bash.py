@@ -18,29 +18,40 @@ class Command:
         self.raw = raw
 
         try:
-            date_str = raw.split(" ", 1)[0]
+            self.date_str = raw.split(" ", 1)[0]
             remaining = raw.split(" ", 1)[1]
             self.date = datetime.strptime(
-                date_str,
+                self.date_str,
                 "%Y-%m-%d.%H:%M:%S"
             )
-            self.host = "rsarai"
+            self.host = "Avell G1711: rsarai"
             self.folder = remaining.split("  ", 1)[0]
-            self.cmd = remaining.split("  ", 1)[1]
+            self.cmd = remaining.strip().split("  ", 1)[1]
             self.date_tz = timezone.localize(self.date)
         except ValueError:
-            self.host = raw.split(" ", 1)[0]
+            self.host = "Avell G1711: rsarai"
             remaining = raw.split(" ", 1)[1]
 
-            date_str = remaining.split(" ", 1)[0]
+            self.date_str = remaining.split(" ", 1)[0]
             remaining = remaining.split(" ", 1)[1]
             self.date = datetime.strptime(
-                date_str,
+                self.date_str,
                 "%Y-%m-%d.%H:%M:%S"
             )
             self.folder = remaining.split("  ", 1)[0]
-            self.cmd = remaining.split("  ", 1)[1]
+            self.cmd = remaining.strip().split("  ", 1)[1]
             self.date_tz = timezone.localize(self.date)
+
+        strip_cmd = self.cmd.strip()
+        try:
+            int(strip_cmd[:4])
+            self.cmd = strip_cmd[4:].strip()
+        except Exception:
+            pass
+
+
+def get_file_paths():
+    return get_files(config.export_path, "*.log")
 
 
 def process():
@@ -50,12 +61,24 @@ def process():
         I use them in multiple computers.
         The following deals with two files on the correct folder.
     """
-    bash_files = get_files(config.export_path, "*.log")
+    bash_files = [max(get_file_paths())]
 
+    handled = set()
     for f_path in bash_files:
         content = f_path.read_text()
         for cmd_str in content.split('\n'):
             if not cmd_str:
                 continue
 
-            yield Command(raw=cmd_str)
+            cmd_object = Command(raw=cmd_str)
+            unique_set = f"""{cmd_object.cmd}, {cmd_object.date_str}, {cmd_object.folder}"""
+            if unique_set in handled:
+                # ids are reseted and are not consisted through different devices
+                # uniqueness validation should be achieved by content
+                continue
+            else:
+                handled.add(unique_set)
+                yield cmd_object
+
+
+process()
