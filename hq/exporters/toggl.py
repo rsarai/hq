@@ -52,4 +52,18 @@ def generate_monthly_exports(beg=None, end=None):
         print(res.content)
 
 
-generate_monthly_exports()
+def generate_projects():
+    res = requests.get(
+        f"https://api.track.toggl.com/api/v8/workspaces/{config.workspace_id}/projects",
+        dict(active='both'),
+        auth=(config.api_key, 'api_token'),
+    )
+    if res.status_code == 200:
+        export_path = Path(config.export_path + "/projects.json")
+        utils.dumper(res.json(), export_path)
+    else:
+        print(res.content)
+
+
+# generate_monthly_exports()
+generate_projects()
