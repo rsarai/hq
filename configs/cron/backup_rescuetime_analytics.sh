@@ -1,2 +1,1 @@
-workon hq
-python ~/github-projects/hq/hq/exporters/rescuetime_analytics.py
+source /home/sarai/.virtualenvs/hq/bin/activate && python /home/sarai/github-projects/hq/hq/exporters/rescuetime_analytics.py

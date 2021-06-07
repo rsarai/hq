@@ -1,6 +1,4 @@
-import calendar
 import sys
-import json
 import requests
 
 from pathlib import Path

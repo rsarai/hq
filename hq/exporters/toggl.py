@@ -65,5 +65,5 @@ def generate_projects():
         print(res.content)
 
 
-# generate_monthly_exports()
+generate_monthly_exports()
 generate_projects()
