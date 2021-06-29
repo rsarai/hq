@@ -84,6 +84,11 @@ class ImportManager:
             data = {"processed_files": list(set([str(f) for f in flat]))}
             json.dump(data, f)
 
+    def reset(self):
+        with open(self.state_file, 'w') as f:
+            data = {"processed_files": []}
+            json.dump(data, f)
+
     def fetch_updates(self):
         with open(self.state_file, 'r') as f:
             content = json.load(f)

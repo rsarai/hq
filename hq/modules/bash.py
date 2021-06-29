@@ -57,7 +57,7 @@ class Command:
 
 
 def get_file_paths():
-    return [max(get_files(config.export_path, "*.log"))]
+    return get_files(config.export_path, "*.log")
 
 
 def process(input_files=None):

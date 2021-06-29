@@ -18,4 +18,12 @@ setup(
     packages=find_packages(include=['hq']),  # Required
     python_requires='>=3.6, <4',
     install_requires=['orger', 'pytz'],  # Optional
+    entry_points={
+        'console_scripts': [
+            'mount_memex=hq.routines.importer:mount_memex',
+            'update_memex=hq.routines.importer:update_memex',
+            'reset=hq.routines.importer:reset',
+            'inc=hq.routines.incremental_notes:append',
+        ],
+    },
 )

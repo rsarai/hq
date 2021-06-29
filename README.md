@@ -7,6 +7,17 @@
 
 ### Notes
 
+#### TIL (29/06/2021):
+- Twint to export tweets:
+```bash
+sudo chmod 777 /var/run/docker.sock
+docker build -t twint .
+docker run -d twint
+docker run -it <id> bash
+twint -u _rebecasarai -o my_tweets.json --json
+docker cp <id>:/root/my_tweets.json ~/my_tweets.json
+```
+
 #### TIL (28/04/2021):
 - You can open a sqlite dataset in readonly mode: https://docs.python.org/3/library/sqlite3.html#sqlite3.connect
 - dataset: databases for lazy people: https://dataset.readthedocs.io/en/latest/

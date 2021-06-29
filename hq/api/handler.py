@@ -7,6 +7,7 @@ from hq.modules.chrome import process as get_browser_history
 from hq.modules.toggl import process as get_time_entries
 from hq.modules.github import process_notifications, process_events
 from hq.modules.rescuetime import process_analytic_data, process_daily_summary
+from hq.modules import nubank
 
 
 def process_bash(input_files=None):
@@ -249,3 +250,25 @@ def process_github_events(input_files):
             "push_data": event.push_data,
             "watch_data": event.watch_data,
         }
+
+
+def process_nubank(input_files=None):
+    print("Processing nubank events")
+
+    for event in nubank.process_card_feed(input_files):
+        yield event.dict()
+
+    for event in nubank.process_card_statements(input_files):
+        yield event.dict()
+
+    for event in nubank.process_bills(input_files):
+        yield event.dict()
+
+    for event in nubank.process_account_feed(input_files):
+        yield event.dict()
+
+    for event in nubank.process_account_statements(input_files):
+        yield event.dict()
+
+    for event in nubank.process_bill_details(input_files):
+        yield event.dict()
