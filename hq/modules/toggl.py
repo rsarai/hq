@@ -67,15 +67,13 @@ def _fetch_projects():
     return projects
 
 
-def process(fetch_recent_file=True):
-    if fetch_recent_file:
-        toggl_files = [get_recent_file()]
-    else:
-        toggl_files = get_file_paths()
+def process(input_files=None):
+    if not input_files:
+        input_files = get_file_paths()
 
     projects = _fetch_projects()
     handled = set()
-    for file in toggl_files:
+    for file in input_files:
         if "projects.json" in str(file):
             continue
 

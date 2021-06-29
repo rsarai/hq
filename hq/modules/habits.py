@@ -44,7 +44,7 @@ def get_file_paths():
         As of now, the export file has all the dataset history,
         so the processing of the latest file should be enough
     """
-    return max(get_files(config.export_path, "*.db"))
+    return [max(get_files(config.export_path, "*.db"))]
 
 
 _QUERY = """
@@ -67,10 +67,13 @@ class Habit:
         self.name = raw[4]
 
 
-def process():
-    db_path = get_file_paths()
-    with get_readonly_connection(db_path) as conn:
-        cur = conn.cursor()
-        cur.execute(_QUERY)
-        for res in cur.fetchall():
-            yield Habit(res)
+def process(input_files=None):
+    if not input_files:
+        input_files = get_file_paths()
+
+    for db_path in input_files:
+        with get_readonly_connection(db_path) as conn:
+            cur = conn.cursor()
+            cur.execute(_QUERY)
+            for res in cur.fetchall():
+                yield Habit(res)

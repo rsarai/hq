@@ -41,3 +41,6 @@ $
 - [ ] Improve `datetime` function to get the time.
 - [ ] Define how to deal with images
 - [ ] Save articles in multiple files
+
+### Full text search with Mongo
+- https://docs.mongodb.com/manual/text-search/

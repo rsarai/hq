@@ -17,13 +17,18 @@ def get_events_file_paths():
 
 
 def get_notification_file_paths():
-    return get_files(config.export_path + "/notifications/", "*.json")
+    return get_files(config.export_path + "/notifications/", "*[!_details].json")
+
+
+def get_notification_detail_file_paths():
+    return get_files(config.export_path + "/notifications/", "*_details.json")
 
 
 class Notification:
 
-    def __init__(self, raw) -> None:
+    def __init__(self, raw, details) -> None:
         self.raw = raw
+        self.github_id = raw["id"]
         self.reason = raw["reason"]
         self.repository = {
             "id": raw.get("repository", {}).get("id"),
@@ -31,13 +36,24 @@ class Notification:
             "full_name": raw.get("repository", {}).get("full_name"),
             "private": raw.get("repository", {}).get("private"),
             "description": raw.get("repository", {}).get("description"),
-            "url": raw.get("repository", {}).get("url"),
+            "url": raw.get("repository", {}).get("html_url"),
         }
         self.url = raw["url"]
-        self.subject = raw["subject"]
-        self.updated_at = raw["updated_at"]
-        self.updated_at = datetime.strptime(self.updated_at, '%Y-%m-%dT%H:%M:%S%z')
+        self.updated_at_str = raw["updated_at"]
+        self.updated_at = datetime.strptime(self.updated_at_str, '%Y-%m-%dT%H:%M:%S%z')
         self.updated_at = self.updated_at.astimezone(timezone)
+
+        if details:
+            key = self.github_id + self.updated_at_str
+
+            if details.get(key):
+                original = raw["subject"].copy()
+                original.update(details[key])
+                self.subject = original
+            else:
+                self.subject = raw["subject"]
+        else:
+            self.subject = raw["subject"]
 
 
 class Event:
@@ -346,10 +362,27 @@ class Event:
             print("New event, you need to change the processing module and the importers")
 
 
-def process_notifications():
-    gh_notification_files = get_notification_file_paths()
+def _fetch_details():
+    details = {}
+    files = get_notification_detail_file_paths()
+
+    for file in files:
+        with open(file, 'r') as json_file:
+            content = json.load(json_file)
+            details.update(content)
+    return details
+
+
+def process_notifications(input_files=None, use_details=True):
+    if not input_files:
+        input_files = get_notification_file_paths()
+
+    details = None
     handled = set()
-    for file in gh_notification_files:
+    if use_details:
+        details = _fetch_details()
+
+    for file in input_files:
         with open(file, 'r') as json_file:
             content = json.load(json_file)
             for notification in content:
@@ -358,13 +391,15 @@ def process_notifications():
                     continue
                 else:
                     handled.add(id)
-                    yield Notification(notification)
+                    yield Notification(notification, details)
 
 
-def process_events():
-    gh_event_files = get_events_file_paths()
+def process_events(input_files=None):
+    if not input_files:
+        input_files = get_events_file_paths()
+
     handled = set()
-    for file in gh_event_files:
+    for file in input_files:
         with open(file, 'r') as json_file:
             content = json.load(json_file)
             for event in content:

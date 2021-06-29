@@ -21,7 +21,7 @@ def get_file_paths():
         As of now, the export file has all the dataset history,
         so the processing of the latest file should be enough
     """
-    return max(get_files(config.export_path, "*.csv"))
+    return [max(get_files(config.export_path, "*.csv"))]
 
 
 class Mood:
@@ -40,9 +40,12 @@ class Mood:
         ).replace(tzinfo=timezone)
 
 
-def process():
-    daylio_file = get_file_paths()
-    with open(daylio_file, newline='') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            yield Mood(row)
+def process(input_files=None):
+    if not input_files:
+        input_files = get_file_paths()
+
+    for daylio_file in input_files:
+        with open(daylio_file, newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                yield Mood(row)

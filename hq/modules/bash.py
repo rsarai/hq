@@ -34,13 +34,19 @@ class Command:
 
             self.date_str = remaining.split(" ", 1)[0]
             remaining = remaining.split(" ", 1)[1]
-            self.date = datetime.strptime(
-                self.date_str,
-                "%Y-%m-%d.%H:%M:%S"
-            )
-            self.folder = remaining.split("  ", 1)[0]
-            self.cmd = remaining.strip().split("  ", 1)[1]
-            self.date_tz = timezone.localize(self.date)
+            try:
+                self.date = datetime.strptime(
+                    self.date_str,
+                    "%Y-%m-%d.%H:%M:%S"
+                )
+                self.folder = remaining.split("  ", 1)[0]
+                self.cmd = remaining.strip().split("  ", 1)[1]
+                self.date_tz = timezone.localize(self.date)
+            except ValueError:
+                self.cmd =  "    " + raw
+                self.folder = ""
+                self.date_tz = None
+                self.date = None
 
         strip_cmd = self.cmd.strip()
         try:
@@ -51,20 +57,15 @@ class Command:
 
 
 def get_file_paths():
-    return get_files(config.export_path, "*.log")
+    return [max(get_files(config.export_path, "*.log"))]
 
 
-def process():
-    """
-        # bash_files = get_files("~/.logs", "*.log")
-        Today exports are centered in a single file, however,
-        I use them in multiple computers.
-        The following deals with two files on the correct folder.
-    """
-    bash_files = [max(get_file_paths())]
+def process(input_files=None):
+    if not input_files:
+        input_files = get_file_paths()
 
     handled = set()
-    for f_path in bash_files:
+    for f_path in input_files:
         content = f_path.read_text()
         for cmd_str in content.split('\n'):
             if not cmd_str:

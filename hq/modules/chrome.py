@@ -66,11 +66,12 @@ def get_file_paths():
     return list(get_files(config.export_path, glob='*.sqlite'))
 
 
-def process():
-    handled = set()
-    chrome_databases = get_file_paths()
+def process(input_files=None):
+    if not input_files:
+        input_files = get_file_paths()
 
-    for db_path in chrome_databases:
+    handled = set()
+    for db_path in input_files:
         with get_readonly_connection(db_path) as conn:
             cur = conn.cursor()
             cur.execute(_QUERY)

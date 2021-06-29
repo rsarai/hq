@@ -104,10 +104,12 @@ class Entry:
         self.productivity = raw[5]
 
 
-def process_analytic_data():
-    rt_notification_files = get_analytic_data_file_paths()
+def process_analytic_data(input_files=None):
+    if not input_files:
+        input_files = get_analytic_data_file_paths()
+
     handled = set()
-    for file in rt_notification_files:
+    for file in input_files:
         with open(file, 'r') as json_file:
             content = json.load(json_file)
             for raw in content['rows']:
@@ -119,10 +121,12 @@ def process_analytic_data():
                     yield Entry(raw)
 
 
-def process_daily_summary():
-    rt_notification_files = get_daily_summary_file_paths()
+def process_daily_summary(input_files=None):
+    if not input_files:
+        input_files = get_daily_summary_file_paths()
+
     handled = set()
-    for file in rt_notification_files:
+    for file in input_files:
         with open(file, 'r') as json_file:
             content = json.load(json_file)
             for summary in content:
