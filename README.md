@@ -2,8 +2,22 @@
 
 [HPI](https://github.com/karlicoss/HPI) got me inspired and I'm trying to play with the idea in smaller scale for myself.
 
-# What is this?
-- This is an interface to deal with all the data that I wanna keep. The main functionality is in `hq/views`.
+- **What is this?** This is a library to deal with all the data that I wanna keep.
+- **What can it do?** A lot of things.
+    - Export my personal data from external APIs
+        - Github notifications and events
+        - Nubank
+        - RescueTime stats
+        - Toggl
+    - Manage a import process of all my data to a single database
+        - All the above plus:
+        - Bash commands
+        - Chrome
+        - Habits
+        - Articles
+        - Daylio
+    - Expose the database through a simple API
+    - Integrates some tools to make my workflow easier
 
 ### Notes
 
@@ -17,6 +31,9 @@ docker run -it <id> bash
 twint -u _rebecasarai -o my_tweets.json --json
 docker cp <id>:/root/my_tweets.json ~/my_tweets.json
 ```
+
+#### Full text search with Mongo
+- https://docs.mongodb.com/manual/text-search/
 
 #### TIL (28/04/2021):
 - You can open a sqlite dataset in readonly mode: https://docs.python.org/3/library/sqlite3.html#sqlite3.connect
@@ -48,10 +65,6 @@ $
 - `os.path.expanduser(path)` On Unix and Windows, return the argument with an initial component of ~ or ~user replaced by that user’s home directory
 
 
-## Todo
-- [ ] Improve `datetime` function to get the time.
-- [ ] Define how to deal with images
-- [ ] Save articles in multiple files
+## TODO
+- [ ] ...
 
-### Full text search with Mongo
-- https://docs.mongodb.com/manual/text-search/

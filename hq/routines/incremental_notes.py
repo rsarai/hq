@@ -21,7 +21,7 @@ def append():
     with open(str(path), 'w') as f:
         for i, content in enumerate(incremental_notes_content):
             if i == 1:
-                f.write(f'\n- [{now_str}] {note}\n')
+                f.write(f'\n- [{now_str}] {note}\n\n')
             elif content == '':
                 continue
             else:
