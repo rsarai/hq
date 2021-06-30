@@ -1,0 +1,18 @@
+rules:
+    - folders: ~/Downloads
+      subfolders: true
+      filters:
+          - extension: zip
+          - filename:
+                contains:
+                    - Export-
+                case_sensitive: true
+      actions:
+          - echo: "Found notion exports!"
+          - move: ~/Documents/02 Areas/digital_life/notion_articles/
+          - python: |
+              import zipfile
+              with zipfile.ZipFile(path, 'r') as zip_ref:
+                  zip_ref.extractall('/home/sarai/Documents/02 Areas/digital_life/notion_articles')
+          - move: ~/Documents/02 Areas/digital_life/notion_articles/exports/
+
