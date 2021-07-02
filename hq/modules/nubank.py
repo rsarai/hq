@@ -21,37 +21,46 @@ class CardFeedEvent(BaseModel):
     amount: Optional[float]
     amount_without_iof: Optional[float]
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, raw):
+        if raw.get("account"):
+            del raw["account"]
 
-        if self.raw.get("account"):
-            del self.raw["account"]
+        if raw.get("account"):
+            del raw["href"]
 
-        if self.raw.get("account"):
-            del self.raw["href"]
+        if raw.get("_links"):
+            del raw["_links"]
 
-        if self.raw.get("_links"):
-            del self.raw["_links"]
+        if raw.get("tokenized"):
+            del raw["tokenized"]
+        del raw["id"]
 
-        if self.raw.get("tokenized"):
-            del self.raw["tokenized"]
-        del self.raw["id"]
+        description = raw.get("description")
+        category = raw["category"]
+        title = raw["title"]
+        data = {
+            "raw": raw,
+            "description": description,
+            "category": category,
+            "title": title,
+        }
 
-        self.description = self.raw.get("description")
-        self.category = self.raw["category"]
-        self.title = self.raw["title"]
-
-        time = self.raw["time"]
+        time = raw["time"]
         if '.' in time:
-            self.date_tz = datetime.strptime(time, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=timezone)
+            date_tz = datetime.strptime(time, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=timezone)
         else:
-            self.date_tz = datetime.strptime(time, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone)
+            date_tz = datetime.strptime(time, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone)
+        data["date_tz"] = date_tz
 
-        if self.raw.get("amount"):
-            self.amount = round(float(self.raw["amount"]), 2)
+        if raw.get("amount"):
+            amount = round(float(raw["amount"]), 2)
+            data["amount"] = amount
 
-        if self.raw.get("amount_without_iof"):
-            self.amount_without_iof = round(float(self.raw["amount_without_iof"]), 2)
+        if raw.get("amount_without_iof"):
+            amount_without_iof = round(float(raw["amount_without_iof"]), 2)
+            data["amount_without_iof"] = amount_without_iof
+
+        super().__init__(**data)
 
 
 class Bills(BaseModel):
@@ -70,33 +79,48 @@ class Bills(BaseModel):
     close_date: Optional[datetime]
     effective_due_date: Optional[datetime]
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.paid = round(float(self.raw["paid"]), 2)
-        self.interest = round(float(self.raw["interest"]), 2)
-        self.past_balance = round(float(self.raw["past_balance"]), 2)
-        self.total_balance = round(float(self.raw["total_balance"]), 2)
-        self.interest_rate = round(float(self.raw["interest_rate"]), 2)
-        self.minimum_payment = round(float(self.raw["minimum_payment"]), 2)
-        self.total_cumulative = round(float(self.raw["total_cumulative"]), 2)
+    def __init__(self, raw):
+        data = {"raw": raw}
+        paid = round(float(raw["paid"]), 2)
+        interest = round(float(raw["interest"]), 2)
+        past_balance = round(float(raw["past_balance"]), 2)
+        total_balance = round(float(raw["total_balance"]), 2)
+        interest_rate = round(float(raw["interest_rate"]), 2)
+        minimum_payment = round(float(raw["minimum_payment"]), 2)
+        total_cumulative = round(float(raw["total_cumulative"]), 2)
+        data["paid"] = paid
+        data["interest"] = interest
+        data["past_balance"] = past_balance
+        data["total_balance"] = total_balance
+        data["interest_rate"] = interest_rate
+        data["minimum_payment"] = minimum_payment
+        data["total_cumulative"] = total_cumulative
 
-        if self.raw.get("remaining_balance"):
-            self.remaining_balance = round(float(self.raw["remaining_balance"]), 2)
+        if raw.get("remaining_balance"):
+            remaining_balance = round(float(raw["remaining_balance"]), 2)
+            data["remaining_balance"] = remaining_balance
 
-        if self.raw.get("remaining_minimum_payment"):
-            self.remaining_minimum_payment = round(float(self.raw["remaining_minimum_payment"]), 2)
+        if raw.get("remaining_minimum_payment"):
+            remaining_minimum_payment = round(float(raw["remaining_minimum_payment"]), 2)
+            data["remaining_minimum_payment"] = remaining_minimum_payment
 
-        due_date = self.raw["due_date"]
-        self.due_date = datetime.strptime(due_date, "%Y-%m-%d").replace(tzinfo=timezone)
+        due_date = raw["due_date"]
+        due_date = datetime.strptime(due_date, "%Y-%m-%d").replace(tzinfo=timezone)
 
-        open_date = self.raw["open_date"]
-        self.open_date = datetime.strptime(open_date, "%Y-%m-%d").replace(tzinfo=timezone)
+        open_date = raw["open_date"]
+        open_date = datetime.strptime(open_date, "%Y-%m-%d").replace(tzinfo=timezone)
 
-        close_date = self.raw["close_date"]
-        self.close_date = datetime.strptime(close_date, "%Y-%m-%d").replace(tzinfo=timezone)
+        close_date = raw["close_date"]
+        close_date = datetime.strptime(close_date, "%Y-%m-%d").replace(tzinfo=timezone)
 
-        effective_due_date = self.raw["effective_due_date"]
-        self.effective_due_date = datetime.strptime(effective_due_date, "%Y-%m-%d").replace(tzinfo=timezone)
+        effective_due_date = raw["effective_due_date"]
+        effective_due_date = datetime.strptime(effective_due_date, "%Y-%m-%d").replace(tzinfo=timezone)
+
+        data["due_date"] = due_date
+        data["open_date"] = open_date
+        data["close_date"] = close_date
+        data["effective_due_date"] = effective_due_date
+        super().__init__(**data)
 
 
 class AccountEvent(BaseModel):
@@ -109,24 +133,29 @@ class AccountEvent(BaseModel):
     origin_account: Optional[dict]
     destination_account: Optional[dict]
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, raw):
+        del raw["id"]
+        data = {"raw": raw}
 
-        del self.raw["id"]
-        self.typename = self.raw["__typename"]
-        self.title = self.raw["title"]
-        self.detail = self.raw["detail"]
+        data["typename"] = raw["__typename"]
+        data["title"]  = raw["title"]
+        data["detail"] = raw["detail"]
 
-        postDate = self.raw["postDate"]
-        self.date_tz = datetime.strptime(postDate, "%Y-%m-%d").replace(tzinfo=timezone)
+        postDate = raw["postDate"]
+        data["date_tz"] = datetime.strptime(postDate, "%Y-%m-%d").replace(tzinfo=timezone)
 
-        self.amount = round(float(self.raw["amount"]), 2)
+        if raw.get("amount"):
+            data["amount"] = round(float(raw["amount"]), 2)
 
-        if self.raw.get("originAccount"):
-            self.origin_account = self.raw["originAccount"]
+        if raw.get("originAccount"):
+            origin_account = raw["originAccount"]
+            data["origin_account"] = origin_account
 
-        if self.raw.get("destinationAccount"):
-            self.destination_account = self.raw["destinationAccount"]
+        if raw.get("destinationAccount"):
+            destination_account = raw["destinationAccount"]
+            data["destination_account"] = destination_account
+
+        super().__init__(**data)
 
 
 class BillDetails(BaseModel):
@@ -147,37 +176,36 @@ class BillDetails(BaseModel):
     minimum_payment: Optional[float]
     line_items: Optional[list]
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, raw):
+        data = {"raw": raw}
+        data["state"] = raw.get("state")
 
-        self.state = self.raw.get("state")
-
-        summary = self.raw.get("summary")
+        summary = raw.get("summary")
         due_date = summary["due_date"]
-        self.due_date = datetime.strptime(due_date, "%Y-%m-%d").replace(tzinfo=timezone)
+        data["due_date"] = datetime.strptime(due_date, "%Y-%m-%d").replace(tzinfo=timezone)
 
         open_date = summary["open_date"]
-        self.open_date = datetime.strptime(open_date, "%Y-%m-%d").replace(tzinfo=timezone)
+        data["open_date"] = datetime.strptime(open_date, "%Y-%m-%d").replace(tzinfo=timezone)
 
         close_date = summary["close_date"]
-        self.close_date = datetime.strptime(close_date, "%Y-%m-%d").replace(tzinfo=timezone)
+        data["close_date"] = datetime.strptime(close_date, "%Y-%m-%d").replace(tzinfo=timezone)
 
         effective_due_date = summary["effective_due_date"]
-        self.effective_due_date = datetime.strptime(effective_due_date, "%Y-%m-%d").replace(tzinfo=timezone)
+        data["effective_due_date"] = datetime.strptime(effective_due_date, "%Y-%m-%d").replace(tzinfo=timezone)
 
-        self.late_interest_rate = round(float(summary["late_interest_rate"]), 2)
-        self.past_balance = round(float(summary["past_balance"]), 2)
-        self.late_fee = round(float(summary["late_fee"]), 2)
-        self.total_balance = round(float(summary["total_balance"]), 2)
-        self.interest_rate = round(float(summary["interest_rate"]), 2)
-        self.total_cumulative = round(float(summary["total_cumulative"]), 2)
-        self.paid = round(float(summary["paid"]), 2)
-        self.interest = round(float(summary["interest"]), 2)
-        self.minimum_payment = round(float(summary["minimum_payment"]), 2)
+        data["late_interest_rate"] = round(float(summary["late_interest_rate"]), 2)
+        data["past_balance"] = round(float(summary["past_balance"]), 2)
+        data["late_fee"] = round(float(summary["late_fee"]), 2)
+        data["total_balance"] = round(float(summary["total_balance"]), 2)
+        data["interest_rate"] = round(float(summary["interest_rate"]), 2)
+        data["total_cumulative"] = round(float(summary["total_cumulative"]), 2)
+        data["paid"] = round(float(summary["paid"]), 2)
+        data["interest"] = round(float(summary["interest"]), 2)
+        data["minimum_payment"] = round(float(summary["minimum_payment"]), 2)
 
-        self.line_items = []
-        for item in self.raw.get("line_items", []):
-            self.line_items.append({
+        line_items = []
+        for item in raw.get("line_items", []):
+            line_items.append({
                 "amount": item["amount"],
                 "index": item.get("index"),
                 "title": item.get("title"),
@@ -185,24 +213,68 @@ class BillDetails(BaseModel):
                 "category": item.get("category"),
                 "charges": item.get("charges"),
             })
+        data["line_items"] = line_items
+
+        super().__init__(**data)
+
+
+def get_card_feed_files():
+    return max(get_files(config.export_path, '*/card_feed.json'))
+
+
+def get_card_statements_files():
+    return max(get_files(config.export_path, '*/card_statements.json'))
+
+
+def get_bills_files():
+    return max(get_files(config.export_path, '*/bills.json'))
+
+
+def get_account_feed_files():
+    return max(get_files(config.export_path, '*/account_feed.json'))
+
+
+def get_account_statements_files():
+    return max(get_files(config.export_path, '*/account_statements.json'))
+
+
+def get_bill_details_files():
+    return get_files(config.export_path, '*/*bill-detail.json')
+
+
+def get_file_paths():
+    return {
+        "card_feed": get_card_feed_files(),
+        "card_statements": get_card_statements_files(),
+        "bills": get_bills_files(),
+        "account_feed": get_account_feed_files(),
+        "account_statements": get_account_statements_files(),
+        "bill_detail": get_bill_details_files(),
+    }
 
 
 def process_card_feed(input_files=None):
-    card_feed_file = max(get_files(config.export_path, '*/card_feed.json'))
+    if input_files:
+        card_feed_file = get_card_feed_files()
+
     card_feed_data = json.loads(card_feed_file.read_bytes())
     for event in card_feed_data["events"]:
         yield CardFeedEvent(event)
 
 
 def process_card_statements(input_files=None):
-    card_statements_file = max(get_files(config.export_path, '*/card_statements.json'))
+    if input_files:
+        card_statements_file = get_card_statements_files()
+
     card_statements_data = json.loads(card_statements_file.read_bytes())
     for event in card_statements_data:
         yield CardFeedEvent(event)
 
 
 def process_bills(input_files=None):
-    bills_file = max(get_files(config.export_path, '*/bills.json'))
+    if input_files:
+        bills_file = get_bills_files()
+
     bills_data = json.loads(bills_file.read_bytes())
     for event in bills_data:
         if 'overdue' == event.get("state"):
@@ -210,14 +282,18 @@ def process_bills(input_files=None):
 
 
 def process_account_feed(input_files=None):
-    account_feed_file = max(get_files(config.export_path, '*/account_feed.json'))
+    if input_files:
+        account_feed_file = get_account_feed_files()
+
     account_feed_data = json.loads(account_feed_file.read_bytes())
     for event in account_feed_data:
         yield AccountEvent(event)
 
 
 def process_account_statements(input_files=None):
-    account_statements_file = max(get_files(config.export_path, '*/account_statements.json'))
+    if input_files:
+        account_statements_file = get_account_statements_files()
+
     account_statements_data = json.loads(account_statements_file.read_bytes())
 
     for event in account_statements_data:
@@ -226,9 +302,9 @@ def process_account_statements(input_files=None):
 
 def process_bill_details(input_files=None):
     if not input_files:
-        bill_detail_files = get_files(config.export_path, '*/*bill-detail.json')
+        input_files = get_bill_details_files()
 
-    for bill_file in bill_detail_files:
+    for bill_file in input_files:
         bill_data = json.loads(bill_file.read_bytes())
         bill = bill_data["bill"]
         yield BillDetails(bill)

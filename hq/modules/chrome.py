@@ -77,7 +77,11 @@ def process(input_files=None):
             cur.execute(_QUERY)
             for row in cur.fetchall():
                 res = dict(zip(KEYS, row))
-                unique_set = f"""{res["visit_time"]}, {res["last_visited"]}, {res["url"]}, {res["title"]}"""
+
+                visit_time = res["visit_time"]
+                visit_time = datetime.strptime(visit_time, '%Y-%m-%d %H:%M:%S')
+                unique_set = f"""{res["last_visited"]}, {res["url"]}, {res["title"]}"""
+
                 if unique_set in handled:
                     # ids are reseted and are not consisted through different devices
                     # uniqueness validation should be achieved by content

@@ -4,7 +4,7 @@ import itertools
 from dataclasses import dataclass
 
 from hq.api import handler
-from hq.modules import bash, habits, daylio, chrome, toggl, github, rescuetime
+from hq.modules import bash, habits, daylio, chrome, toggl, github, rescuetime, nubank
 
 @dataclass
 class ImportManager:
@@ -15,8 +15,9 @@ class ImportManager:
     has_toggl: bool = True
     has_github: bool = True
     has_rescuetime: bool = True
-    working_files = []
+    has_nubank: bool = True
     state_file: str = '.db.json'
+    working_files = []
 
     def available_importers(self):
         return f"""
@@ -30,6 +31,17 @@ class ImportManager:
         """
 
     def fetch_memex_first_import(self):
+        all_bash_files = []
+        all_habits_files = []
+        all_mood_files = []
+        all_browser_files = []
+        all_toggl_files = []
+        all_rc_summary_files = []
+        all_rc_analytics_files = []
+        all_gh_events_files = []
+        all_gh_notification_files = []
+        all_nubank_files = []
+
         if self.has_bash:
             all_bash_files = bash.get_file_paths()
             yield from handler.process_bash(all_bash_files)
@@ -64,6 +76,10 @@ class ImportManager:
             all_gh_notification_files = github.get_notification_file_paths()
             yield from handler.process_github_notifications(all_gh_notification_files)
 
+        if self.has_nubank:
+            all_nubank_files = nubank.get_file_paths()
+            yield from handler.process_nubank(all_nubank_files)
+
         self.working_files.extend([
             all_bash_files,
             all_habits_files,
@@ -74,6 +90,7 @@ class ImportManager:
             all_rc_analytics_files,
             all_gh_events_files,
             all_gh_notification_files,
+            all_nubank_files,
         ])
 
     def mark_import_as_completed(self):
@@ -103,9 +120,10 @@ class ImportManager:
         all_rc_analytics_files = []
         all_gh_events_files = []
         all_gh_notification_files = []
+        all_nubank_files = []
 
         if self.has_bash:
-            all_bash_files = habits.get_file_paths()
+            all_bash_files = bash.get_file_paths()
             all_bash_files = set(all_bash_files) - set(processed_files)
             yield from handler.process_bash(all_bash_files)
 
@@ -147,6 +165,10 @@ class ImportManager:
             all_gh_notification_files = set(all_gh_notification_files) - set(processed_files)
             yield from handler.process_github_notifications(all_gh_notification_files)
 
+        if self.has_nubank:
+            all_nubank_files = nubank.get_file_paths()
+            yield from handler.process_nubank(all_nubank_files)
+
         self.working_files.extend([
             all_bash_files,
             all_habits_files,
@@ -157,4 +179,5 @@ class ImportManager:
             all_rc_analytics_files,
             all_gh_events_files,
             all_gh_notification_files,
+            all_nubank_files,
         ])

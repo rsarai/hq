@@ -1,5 +1,7 @@
 import pytz
 
+from typing import Optional, Dict, Any
+
 from hq.modules.bash import process as bash_commands
 from hq.modules.habits import process as get_habits
 from hq.modules.daylio import process as get_moods
@@ -233,7 +235,7 @@ def process_github_events(input_files):
             "datetime": event.created_at,
             "timestamp_utc": str(event.created_at.astimezone(pytz.utc).timestamp()),
             "timezone": "America/Recife",
-            "device_name": "rsarai account",
+            "device_name": "rsarai's account",
             "github_id": event.github_id,
             "type": event.type,
             "public": event.public,
@@ -254,21 +256,77 @@ def process_github_events(input_files):
 
 def process_nubank(input_files=None):
     print("Processing nubank events")
+    if not input_files:
+        input_files = {}
 
-    for event in nubank.process_card_feed(input_files):
-        yield event.dict()
+    for event in nubank.process_card_feed(input_files.get("card_feed")):
+        data = event.dict()
+        data["provider"] = "nubank"
+        data["activity"] = "triggered"
+        data["principal_entity"] = "Rebeca Sarai"
+        data["activity_entities"] = ["credit card event"]
+        data["device_name"] = "Rebeca's account"
+        data["timestamp_utc"] = str(event.date_tz.astimezone(pytz.utc).timestamp()),
+        data["datetime"] = event.date_tz
+        data["timezone"] = "America/Recife"
+        yield data
 
-    for event in nubank.process_card_statements(input_files):
-        yield event.dict()
+    for event in nubank.process_card_statements(input_files.get("card_statements")):
+        data = event.dict()
+        data["provider"] = "nubank"
+        data["activity"] = "triggered"
+        data["principal_entity"] = "Rebeca Sarai"
+        data["activity_entities"] = ["credit card statements"]
+        data["device_name"] = "Rebeca's account"
+        data["timestamp_utc"] = str(event.date_tz.astimezone(pytz.utc).timestamp()),
+        data["datetime"] = event.date_tz
+        data["timezone"] = "America/Recife"
+        yield data
 
-    for event in nubank.process_bills(input_files):
-        yield event.dict()
+    for event in nubank.process_bills(input_files.get("bills")):
+        data = event.dict()
+        data["provider"] = "nubank"
+        data["activity"] = "triggered"
+        data["principal_entity"] = "Rebeca Sarai"
+        data["activity_entities"] = ["bill"]
+        data["device_name"] = "Rebeca's account"
+        data["timestamp_utc"] = str(event.close_date.astimezone(pytz.utc).timestamp()),
+        data["datetime"] = event.close_date
+        data["timezone"] = "America/Recife"
+        yield data
 
-    for event in nubank.process_account_feed(input_files):
-        yield event.dict()
+    for event in nubank.process_account_feed(input_files.get("account_feed")):
+        data = event.dict()
+        data["provider"] = "nubank"
+        data["activity"] = "triggered"
+        data["principal_entity"] = "Rebeca Sarai"
+        data["activity_entities"] = ["account event"]
+        data["device_name"] = "Rebeca's account"
+        data["timestamp_utc"] = str(event.date_tz.astimezone(pytz.utc).timestamp()),
+        data["datetime"] = event.date_tz
+        data["timezone"] = "America/Recife"
+        yield data
 
-    for event in nubank.process_account_statements(input_files):
-        yield event.dict()
+    for event in nubank.process_account_statements(input_files.get("account_statements")):
+        data = event.dict()
+        data["provider"] = "nubank"
+        data["activity"] = "triggered"
+        data["principal_entity"] = "Rebeca Sarai"
+        data["activity_entities"] = ["account statement"]
+        data["device_name"] = "Rebeca's account"
+        data["timestamp_utc"] = str(event.date_tz.astimezone(pytz.utc).timestamp()),
+        data["datetime"] = event.date_tz
+        data["timezone"] = "America/Recife"
+        yield data
 
-    for event in nubank.process_bill_details(input_files):
-        yield event.dict()
+    for event in nubank.process_bill_details(input_files.get("bill_detail")):
+        data = event.dict()
+        data["provider"] = "nubank"
+        data["activity"] = "triggered"
+        data["principal_entity"] = "Rebeca Sarai"
+        data["activity_entities"] = ["bill purchases"]
+        data["device_name"] = "Rebeca's account"
+        data["timestamp_utc"] = str(event.close_date.astimezone(pytz.utc).timestamp()),
+        data["datetime"] = event.close_date
+        data["timezone"] = "America/Recife"
+        yield data
