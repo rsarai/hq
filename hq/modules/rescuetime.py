@@ -99,7 +99,7 @@ class Entry:
 
         self.time_spent_in_seconds = raw[1]
         self.number_of_people = raw[2]
-        self.activity = raw[3]
+        self.detail = raw[3]
         self.category = raw[4]
         self.productivity = raw[5]
 

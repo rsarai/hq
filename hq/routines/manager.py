@@ -72,11 +72,11 @@ class ImportManager:
 
         if self.has_rescuetime:
             all_rc_summary_files = rescuetime.get_daily_summary_file_paths()
-            rescuetime_data_generator = rescuetime.process(all_rc_summary_files)
+            rescuetime_data_generator = rescuetime.process_daily_summary(all_rc_summary_files)
             yield from handler.process_rescue_time_summary(rescuetime_data_generator)
 
             all_rc_analytics_files = rescuetime.get_analytic_data_file_paths()
-            rescuetime_data_generator = rescuetime.process(all_rc_analytics_files)
+            rescuetime_data_generator = rescuetime.process_analytic_data(all_rc_analytics_files)
             yield from handler.process_rescue_time_analytics(rescuetime_data_generator)
 
         if self.has_github:
@@ -91,7 +91,7 @@ class ImportManager:
         if self.has_nubank:
             all_nubank_card_files = nubank.get_card_feed_files()
             nubank_data_generator = nubank.process_card_feed(all_nubank_card_files)
-            yield from handler.process_nubank(nubank_data_generator)
+            yield from handler.process_nubank_card_feed(nubank_data_generator)
 
             all_nubank_account_files = nubank.get_account_feed_files()
             nubank_data_generator = nubank.process_account_feed(all_nubank_account_files)

@@ -177,8 +177,11 @@ class BillDetails(BaseModel):
     effective_due_date: Optional[datetime]
 
     def __init__(self, raw):
-        del raw["id"]
-        del raw["_links"]
+        if raw.get('id'):
+            del raw["id"]
+
+        if raw.get('_links'):
+            del raw["_links"]
         data = {"raw": raw}
         data["state"] = raw.get("state")
 
@@ -221,23 +224,23 @@ class BillDetails(BaseModel):
 
 
 def get_card_feed_files():
-    return max(get_files(config.export_path, '*/card_feed.json'))
+    return [max(get_files(config.export_path, '*/card_feed.json'))]
 
 
 def get_card_statements_files():
-    return max(get_files(config.export_path, '*/card_statements.json'))
+    return [max(get_files(config.export_path, '*/card_statements.json'))]
 
 
 def get_bills_files():
-    return max(get_files(config.export_path, '*/bills.json'))
+    return [max(get_files(config.export_path, '*/bills.json'))]
 
 
 def get_account_feed_files():
-    return max(get_files(config.export_path, '*/account_feed.json'))
+    return [max(get_files(config.export_path, '*/account_feed.json'))]
 
 
 def get_account_statements_files():
-    return max(get_files(config.export_path, '*/account_statements.json'))
+    return [max(get_files(config.export_path, '*/account_statements.json'))]
 
 
 def get_bill_details_files():
@@ -256,9 +259,10 @@ def process_card_feed(input_files=None):
     if not input_files:
         input_files = get_card_feed_files()
 
-    card_feed_data = json.loads(input_files.read_bytes())
-    for event in card_feed_data["events"]:
-        yield CardFeedEvent(event)
+    for card_feed_file in input_files:
+        card_feed_data = json.loads(card_feed_file.read_bytes())
+        for event in card_feed_data["events"]:
+            yield CardFeedEvent(event)
 
 
 def process_card_statements(input_files=None):
@@ -268,9 +272,10 @@ def process_card_statements(input_files=None):
     if not input_files:
         input_files = get_card_statements_files()
 
-    card_statements_data = json.loads(input_files.read_bytes())
-    for event in card_statements_data:
-        yield CardFeedEvent(event)
+    for card_statements_file in input_files:
+        card_statements_data = json.loads(card_statements_file.read_bytes())
+        for event in card_statements_data:
+            yield CardFeedEvent(event)
 
 
 def process_bills(input_files=None):
@@ -280,19 +285,21 @@ def process_bills(input_files=None):
     if not input_files:
         input_files = get_bills_files()
 
-    bills_data = json.loads(input_files.read_bytes())
-    for event in bills_data:
-        if 'overdue' == event.get("state"):
-            yield Bills(event.get("summary"))
+    for bills_file in input_files:
+        bills_data = json.loads(bills_file.read_bytes())
+        for event in bills_data:
+            if 'overdue' == event.get("state"):
+                yield Bills(event.get("summary"))
 
 
 def process_account_feed(input_files=None):
     if not input_files:
         input_files = get_account_feed_files()
 
-    account_feed_data = json.loads(input_files.read_bytes())
-    for event in account_feed_data:
-        yield AccountEvent(event)
+    for account_file in input_files:
+        account_feed_data = json.loads(account_file.read_bytes())
+        for event in account_feed_data:
+            yield AccountEvent(event)
 
 
 def process_account_statements(input_files=None):
@@ -302,10 +309,10 @@ def process_account_statements(input_files=None):
     if not input_files:
         input_files = get_account_statements_files()
 
-    account_statements_data = json.loads(input_files.read_bytes())
-
-    for event in account_statements_data:
-        yield AccountEvent(event)
+    for account_stat_file in input_files:
+        account_statements_data = json.loads(account_stat_file.read_bytes())
+        for event in account_statements_data:
+            yield AccountEvent(event)
 
 
 def process_bill_details(input_files=None):

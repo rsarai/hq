@@ -208,7 +208,7 @@ def process_rescue_time_analytics(data_iterable=None):
             "device_name": "Web App",
             "time_spent_in_seconds": entry.time_spent_in_seconds,
             "number_of_people": entry.number_of_people,
-            "activity": entry.activity,
+            "detail": entry.detail,
             "category": entry.category,
             "productivity": entry.productivity,
         }
