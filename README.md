@@ -66,5 +66,5 @@ $
 
 
 ## TODO
-- [ ] ...
+- [ ] Refactor all modules to use pydantic (eg: `hq/modules/nubank.py`). The advantage is that it simplifies `handler.py`.
 
