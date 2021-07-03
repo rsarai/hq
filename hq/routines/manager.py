@@ -28,6 +28,7 @@ class ImportManager:
             toggl = {self.has_toggl}
             github = {self.has_github}
             rescuetime = {self.has_rescuetime}
+            nubank = {self.has_nubank}
         """
 
     def fetch_memex_first_import(self):
@@ -40,45 +41,65 @@ class ImportManager:
         all_rc_analytics_files = []
         all_gh_events_files = []
         all_gh_notification_files = []
-        all_nubank_files = []
+        all_nubank_card_files = []
+        all_nubank_account_files = []
+        all_nubank_bills_files = []
 
         if self.has_bash:
             all_bash_files = bash.get_file_paths()
-            yield from handler.process_bash(all_bash_files)
+            bash_data_generator = bash.process(all_bash_files)
+            yield from handler.process_bash(bash_data_generator)
 
         if self.has_habits:
             all_habits_files = habits.get_file_paths()
-            yield from handler.process_habits(all_habits_files)
+            habits_data_generator = habits.process(all_habits_files)
+            yield from handler.process_habits(habits_data_generator)
 
         if self.has_daylio:
             all_mood_files = daylio.get_file_paths()
-            yield from handler.process_moods(all_mood_files)
+            daylio_data_generator = daylio.process(all_mood_files)
+            yield from handler.process_moods(daylio_data_generator)
 
         if self.has_chrome:
             all_browser_files = chrome.get_file_paths()
-            yield from handler.process_google_chrome(all_browser_files)
+            chrome_data_generator = chrome.process(all_browser_files)
+            yield from handler.process_google_chrome(chrome_data_generator)
 
         if self.has_toggl:
             all_toggl_files = toggl.get_file_paths()
-            yield from handler.process_toggl(all_toggl_files)
+            toggl_data_generator = toggl.process(all_toggl_files)
+            yield from handler.process_toggl(toggl_data_generator)
 
         if self.has_rescuetime:
             all_rc_summary_files = rescuetime.get_daily_summary_file_paths()
-            yield from handler.process_rescue_time_summary(all_rc_summary_files)
+            rescuetime_data_generator = rescuetime.process(all_rc_summary_files)
+            yield from handler.process_rescue_time_summary(rescuetime_data_generator)
 
             all_rc_analytics_files = rescuetime.get_analytic_data_file_paths()
-            yield from handler.process_rescue_time_analytics(all_rc_analytics_files)
+            rescuetime_data_generator = rescuetime.process(all_rc_analytics_files)
+            yield from handler.process_rescue_time_analytics(rescuetime_data_generator)
 
         if self.has_github:
             all_gh_events_files = github.get_events_file_paths()
-            yield from handler.process_github_events(all_gh_events_files)
+            github_data_generator = github.process_events(all_gh_events_files)
+            yield from handler.process_github_events(github_data_generator)
 
             all_gh_notification_files = github.get_notification_file_paths()
-            yield from handler.process_github_notifications(all_gh_notification_files)
+            github_data_generator = github.process_notifications(all_gh_notification_files)
+            yield from handler.process_github_notifications(github_data_generator)
 
         if self.has_nubank:
-            all_nubank_files = nubank.get_file_paths()
-            yield from handler.process_nubank(all_nubank_files)
+            all_nubank_card_files = nubank.get_card_feed_files()
+            nubank_data_generator = nubank.process_card_feed(all_nubank_card_files)
+            yield from handler.process_nubank(nubank_data_generator)
+
+            all_nubank_account_files = nubank.get_account_feed_files()
+            nubank_data_generator = nubank.process_account_feed(all_nubank_account_files)
+            yield from handler.process_nubank_account_feed(nubank_data_generator)
+
+            all_nubank_bills_files = nubank.get_bill_details_files()
+            nubank_data_generator = nubank.process_bill_details(all_nubank_bills_files)
+            yield from handler.process_nubank_bills(nubank_data_generator)
 
         self.working_files.extend([
             all_bash_files,
@@ -90,7 +111,9 @@ class ImportManager:
             all_rc_analytics_files,
             all_gh_events_files,
             all_gh_notification_files,
-            all_nubank_files,
+            all_nubank_card_files,
+            all_nubank_account_files,
+            all_nubank_bills_files,
         ])
 
     def mark_import_as_completed(self):
@@ -120,54 +143,68 @@ class ImportManager:
         all_rc_analytics_files = []
         all_gh_events_files = []
         all_gh_notification_files = []
-        all_nubank_files = []
+        all_nubank_card_files = []
+        all_nubank_account_files = []
+        all_nubank_bills_files = []
 
         if self.has_bash:
-            all_bash_files = bash.get_file_paths()
+            all_bash_files = [str(i) for i in bash.get_file_paths()]
             all_bash_files = set(all_bash_files) - set(processed_files)
             yield from handler.process_bash(all_bash_files)
 
         if self.has_habits:
-            all_habits_files = habits.get_file_paths()
+            all_habits_files = [str(i) for i in habits.get_file_paths()]
             all_habits_files = set(all_habits_files) - set(processed_files)
             yield from handler.process_habits(all_habits_files)
 
         if self.has_daylio:
-            all_mood_files = daylio.get_file_paths()
+            all_mood_files = [str(i) for i in daylio.get_file_paths()]
             all_mood_files = set(all_mood_files) - set(processed_files)
             yield from handler.process_moods(all_mood_files)
 
         if self.has_chrome:
-            all_browser_files = chrome.get_file_paths()
+            all_browser_files = [str(i) for i in chrome.get_file_paths()]
             all_browser_files = set(all_browser_files) - set(processed_files)
             yield from handler.process_google_chrome(all_browser_files)
 
         if self.has_toggl:
-            all_toggl_files = toggl.get_file_paths()
+            all_toggl_files = [str(i) for i in toggl.get_file_paths()]
             all_toggl_files = set(all_toggl_files) - set(processed_files)
             yield from handler.process_toggl(all_toggl_files)
 
         if self.has_rescuetime:
-            all_rc_summary_files = rescuetime.get_daily_summary_file_paths()
+            all_rc_summary_files = [str(i) for i in rescuetime.get_daily_summary_file_paths()]
             all_rc_summary_files = set(all_rc_summary_files) - set(processed_files)
             yield from handler.process_rescue_time_summary(all_rc_summary_files)
 
-            all_rc_analytics_files = rescuetime.get_analytic_data_file_paths()
+            all_rc_analytics_files = [str(i) for i in rescuetime.get_analytic_data_file_paths()]
             all_rc_analytics_files = set(all_rc_analytics_files) - set(processed_files)
             yield from handler.process_rescue_time_analytics(all_rc_analytics_files)
 
         if self.has_github:
-            all_gh_events_files = github.get_events_file_paths()
+            all_gh_events_files = [str(i) for i in github.get_events_file_paths()]
             all_gh_events_files = set(all_gh_events_files) - set(processed_files)
             yield from handler.process_github_events(all_gh_events_files)
 
-            all_gh_notification_files = github.get_notification_file_paths()
+            all_gh_notification_files = [str(i) for i in github.get_notification_file_paths()]
             all_gh_notification_files = set(all_gh_notification_files) - set(processed_files)
             yield from handler.process_github_notifications(all_gh_notification_files)
 
         if self.has_nubank:
-            all_nubank_files = nubank.get_file_paths()
-            yield from handler.process_nubank(all_nubank_files)
+            all_nubank_card_files = [str(i) for i in nubank.get_card_feed_files()]
+            all_nubank_card_files = set(all_nubank_card_files) - set(processed_files)
+            nubank_data_generator = nubank.process_card_feed(all_nubank_card_files)
+            yield from handler.process_nubank(nubank_data_generator)
+
+            all_nubank_account_files = [str(i) for i in nubank.get_account_feed_files()]
+            all_nubank_account_files = set(all_nubank_account_files) - set(processed_files)
+            nubank_data_generator = nubank.process_account_feed(all_nubank_account_files)
+            yield from handler.process_nubank_account_feed(nubank_data_generator)
+
+            all_nubank_bills_files = [str(i) for i in nubank.get_bill_details_files()]
+            all_nubank_bills_files = set(all_nubank_bills_files) - set(processed_files)
+            nubank_data_generator = nubank.process_bill_details(all_nubank_bills_files)
+            yield from handler.process_nubank_bills(nubank_data_generator)
 
         self.working_files.extend([
             all_bash_files,
@@ -179,5 +216,7 @@ class ImportManager:
             all_rc_analytics_files,
             all_gh_events_files,
             all_gh_notification_files,
-            all_nubank_files,
+            all_nubank_card_files,
+            all_nubank_account_files,
+            all_nubank_bills_files,
         ])

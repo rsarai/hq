@@ -70,10 +70,10 @@ class Bills(BaseModel):
     past_balance: Optional[float]
     total_balance: Optional[float]
     interest_rate: Optional[float]
-    minimum_payment: Optional[float]
     total_cumulative: Optional[float]
     remaining_balance: Optional[float]
     remaining_minimum_payment: Optional[float]
+    minimum_payment: Optional[float]
     due_date: Optional[datetime]
     open_date: Optional[datetime]
     close_date: Optional[datetime]
@@ -161,22 +161,24 @@ class AccountEvent(BaseModel):
 class BillDetails(BaseModel):
     raw: dict
     state: Optional[str]
-    due_date: Optional[datetime]
-    open_date: Optional[datetime]
-    close_date: Optional[datetime]
-    effective_due_date: Optional[datetime]
     late_interest_rate: Optional[float]
     past_balance: Optional[float]
     late_fee: Optional[float]
     total_balance: Optional[float]
     interest_rate: Optional[float]
     total_cumulative: Optional[float]
-    paid: Optional[float]
     interest: Optional[float]
-    minimum_payment: Optional[float]
     line_items: Optional[list]
+    paid: Optional[float]
+    minimum_payment: Optional[float]
+    due_date: Optional[datetime]
+    open_date: Optional[datetime]
+    close_date: Optional[datetime]
+    effective_due_date: Optional[datetime]
 
     def __init__(self, raw):
+        del raw["id"]
+        del raw["_links"]
         data = {"raw": raw}
         data["state"] = raw.get("state")
 
@@ -245,56 +247,62 @@ def get_bill_details_files():
 def get_file_paths():
     return {
         "card_feed": get_card_feed_files(),
-        "card_statements": get_card_statements_files(),
-        "bills": get_bills_files(),
         "account_feed": get_account_feed_files(),
-        "account_statements": get_account_statements_files(),
         "bill_detail": get_bill_details_files(),
     }
 
 
 def process_card_feed(input_files=None):
-    if input_files:
-        card_feed_file = get_card_feed_files()
+    if not input_files:
+        input_files = get_card_feed_files()
 
-    card_feed_data = json.loads(card_feed_file.read_bytes())
+    card_feed_data = json.loads(input_files.read_bytes())
     for event in card_feed_data["events"]:
         yield CardFeedEvent(event)
 
 
 def process_card_statements(input_files=None):
-    if input_files:
-        card_statements_file = get_card_statements_files()
+    """
+        Appears (not sure) to be a simplified version of card_feed
+    """
+    if not input_files:
+        input_files = get_card_statements_files()
 
-    card_statements_data = json.loads(card_statements_file.read_bytes())
+    card_statements_data = json.loads(input_files.read_bytes())
     for event in card_statements_data:
         yield CardFeedEvent(event)
 
 
 def process_bills(input_files=None):
-    if input_files:
-        bills_file = get_bills_files()
+    """
+        Simplified version of the bill_details
+    """
+    if not input_files:
+        input_files = get_bills_files()
 
-    bills_data = json.loads(bills_file.read_bytes())
+    bills_data = json.loads(input_files.read_bytes())
     for event in bills_data:
         if 'overdue' == event.get("state"):
             yield Bills(event.get("summary"))
 
 
 def process_account_feed(input_files=None):
-    if input_files:
-        account_feed_file = get_account_feed_files()
+    if not input_files:
+        input_files = get_account_feed_files()
 
-    account_feed_data = json.loads(account_feed_file.read_bytes())
+    account_feed_data = json.loads(input_files.read_bytes())
     for event in account_feed_data:
         yield AccountEvent(event)
 
 
 def process_account_statements(input_files=None):
-    if input_files:
-        account_statements_file = get_account_statements_files()
+    """
+        Simplified version of account_feed
+    """
+    if not input_files:
+        input_files = get_account_statements_files()
 
-    account_statements_data = json.loads(account_statements_file.read_bytes())
+    account_statements_data = json.loads(input_files.read_bytes())
 
     for event in account_statements_data:
         yield AccountEvent(event)

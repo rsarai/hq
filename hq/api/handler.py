@@ -1,20 +1,12 @@
 import pytz
 
-from typing import Optional, Dict, Any
 
-from hq.modules.bash import process as bash_commands
-from hq.modules.habits import process as get_habits
-from hq.modules.daylio import process as get_moods
-from hq.modules.chrome import process as get_browser_history
-from hq.modules.toggl import process as get_time_entries
-from hq.modules.github import process_notifications, process_events
-from hq.modules.rescuetime import process_analytic_data, process_daily_summary
-from hq.modules import nubank
-
-
-def process_bash(input_files=None):
+def process_bash(data_iterable=None):
     print("Processing bash commands")
-    for cmd in bash_commands(input_files):
+    if not data_iterable:
+        data_iterable = []
+
+    for cmd in data_iterable:
         if "ls" in cmd.cmd or "cd .." in cmd.cmd:
             continue
 
@@ -32,9 +24,12 @@ def process_bash(input_files=None):
         }
 
 
-def process_habits(input_files=None):
+def process_habits(data_iterable=None):
     print("Processing habits")
-    for habit in get_habits(input_files):
+    if not data_iterable:
+        data_iterable = []
+
+    for habit in data_iterable:
         yield {
             "provider": "habits",
             "activity": "marked",
@@ -47,9 +42,12 @@ def process_habits(input_files=None):
         }
 
 
-def process_moods(input_files=None):
+def process_moods(data_iterable=None):
     print("Processing moods")
-    for mood in get_moods(input_files):
+    if not data_iterable:
+        data_iterable = []
+
+    for mood in data_iterable:
         yield {
             "provider": mood.provider,
             "activity": "rated",
@@ -65,9 +63,12 @@ def process_moods(input_files=None):
         }
 
 
-def process_google_chrome(input_files=None):
+def process_google_chrome(data_iterable=None):
     print("Processing browser history, this will take a while")
-    for link in get_browser_history(input_files):
+    if not data_iterable:
+        data_iterable = []
+
+    for link in data_iterable:
         yield {
             "provider": link.provider,
             "activity": "accessed",
@@ -87,9 +88,12 @@ def process_google_chrome(input_files=None):
         }
 
 
-def process_toggl(input_files=None):
+def process_toggl(data_iterable=None):
     print("Processing toggl")
-    for entry in get_time_entries(input_files):
+    if not data_iterable:
+        data_iterable = []
+
+    for entry in data_iterable:
         activity_entities = [entry.project_name.lower()] if entry.project_name else []
         yield {
             "provider": "toggl",
@@ -112,9 +116,12 @@ def process_toggl(input_files=None):
         }
 
 
-def process_rescue_time_summary(input_files=None):
+def process_rescue_time_summary(data_iterable=None):
     print("Processing rescuetime daily summary")
-    for summary in process_daily_summary(input_files):
+    if not data_iterable:
+        data_iterable = []
+
+    for summary in data_iterable:
         yield {
             "provider": "rescuetime",
             "activity": "generated",
@@ -184,9 +191,12 @@ def process_rescue_time_summary(input_files=None):
         }
 
 
-def process_rescue_time_analytics(input_files=None):
+def process_rescue_time_analytics(data_iterable=None):
     print("Processing rescuetime analytics")
-    for entry in process_analytic_data(input_files):
+    if not data_iterable:
+        data_iterable = []
+
+    for entry in data_iterable:
         yield {
             "provider": "rescuetime",
             "activity": "tracked",
@@ -204,9 +214,12 @@ def process_rescue_time_analytics(input_files=None):
         }
 
 
-def process_github_notifications(input_files=None):
+def process_github_notifications(data_iterable=None):
     print("Processing github notifications")
-    for notification in process_notifications(input_files):
+    if not data_iterable:
+        data_iterable = []
+
+    for notification in data_iterable:
         yield {
             "provider": "github",
             "activity": "received",
@@ -224,9 +237,12 @@ def process_github_notifications(input_files=None):
         }
 
 
-def process_github_events(input_files):
+def process_github_events(data_iterable=None):
     print("Processing github events")
-    for event in process_events(input_files):
+    if not data_iterable:
+        data_iterable = []
+
+    for event in data_iterable:
         yield {
             "provider": "github",
             "activity": "triggered",
@@ -254,12 +270,12 @@ def process_github_events(input_files):
         }
 
 
-def process_nubank(input_files=None):
-    print("Processing nubank events")
-    if not input_files:
-        input_files = {}
+def process_nubank_card_feed(data_iterable=None):
+    print("Processing nubank card feed")
+    if not data_iterable:
+        data_iterable = []
 
-    for event in nubank.process_card_feed(input_files.get("card_feed")):
+    for event in data_iterable:
         data = event.dict()
         data["provider"] = "nubank"
         data["activity"] = "triggered"
@@ -271,31 +287,13 @@ def process_nubank(input_files=None):
         data["timezone"] = "America/Recife"
         yield data
 
-    for event in nubank.process_card_statements(input_files.get("card_statements")):
-        data = event.dict()
-        data["provider"] = "nubank"
-        data["activity"] = "triggered"
-        data["principal_entity"] = "Rebeca Sarai"
-        data["activity_entities"] = ["credit card statements"]
-        data["device_name"] = "Rebeca's account"
-        data["timestamp_utc"] = str(event.date_tz.astimezone(pytz.utc).timestamp()),
-        data["datetime"] = event.date_tz
-        data["timezone"] = "America/Recife"
-        yield data
 
-    for event in nubank.process_bills(input_files.get("bills")):
-        data = event.dict()
-        data["provider"] = "nubank"
-        data["activity"] = "triggered"
-        data["principal_entity"] = "Rebeca Sarai"
-        data["activity_entities"] = ["bill"]
-        data["device_name"] = "Rebeca's account"
-        data["timestamp_utc"] = str(event.close_date.astimezone(pytz.utc).timestamp()),
-        data["datetime"] = event.close_date
-        data["timezone"] = "America/Recife"
-        yield data
+def process_nubank_account_feed(data_iterable=None):
+    print("Processing nubank account feed")
+    if not data_iterable:
+        data_iterable = []
 
-    for event in nubank.process_account_feed(input_files.get("account_feed")):
+    for event in data_iterable:
         data = event.dict()
         data["provider"] = "nubank"
         data["activity"] = "triggered"
@@ -307,19 +305,13 @@ def process_nubank(input_files=None):
         data["timezone"] = "America/Recife"
         yield data
 
-    for event in nubank.process_account_statements(input_files.get("account_statements")):
-        data = event.dict()
-        data["provider"] = "nubank"
-        data["activity"] = "triggered"
-        data["principal_entity"] = "Rebeca Sarai"
-        data["activity_entities"] = ["account statement"]
-        data["device_name"] = "Rebeca's account"
-        data["timestamp_utc"] = str(event.date_tz.astimezone(pytz.utc).timestamp()),
-        data["datetime"] = event.date_tz
-        data["timezone"] = "America/Recife"
-        yield data
 
-    for event in nubank.process_bill_details(input_files.get("bill_detail")):
+def process_nubank_bills(data_iterable=None):
+    print("Processing nubank bill details")
+    if not data_iterable:
+        data_iterable = []
+
+    for event in data_iterable:
         data = event.dict()
         data["provider"] = "nubank"
         data["activity"] = "triggered"
