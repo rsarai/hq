@@ -1,11 +1,11 @@
-import sys
 import json
 import pytz
 
 from datetime import datetime
+from pydantic import BaseModel
+from typing import Optional
 
-sys.path.append('/home/sarai/github-projects/hq')
-from hq.common import get_files
+from hq.common import get_files, parse_datetime
 from hq.config import Toggl as config
 
 
@@ -24,37 +24,46 @@ def get_recent_file():
     return max(get_files(config.export_path, "*.json"))
 
 
-class TimeEntry:
+class TimeEntry(BaseModel):
+    raw: dict
+    id: Optional[int]
+    guid: Optional[str]
+    start: Optional[datetime]
+    stop: Optional[datetime]
+    duration: Optional[int]
+    description: Optional[str]
+    duronly: Optional[bool]
+    tags: Optional[list]
+    at: Optional[datetime]
+    project_name: Optional[str]
+    project_id: Optional[int]
+    project_is_active: Optional[bool]
+
     def __init__(self, raw, projects) -> None:
-        self.raw = raw
-        self.id = raw["id"]
-        self.guid = raw["guid"]
+        data = {"raw": raw}
+        data["guid"] = raw["guid"]
 
-        self.start = raw["start"]
-        self.start = datetime.strptime(self.start, '%Y-%m-%dT%H:%M:%S%z')
-        self.start = self.start.astimezone(timezone)
+        start = raw["start"]
+        data["start"] = parse_datetime(start, '%Y-%m-%dT%H:%M:%S%z')
 
-        self.stop = raw["stop"]
-        self.stop = datetime.strptime(self.stop, '%Y-%m-%dT%H:%M:%S%z')
-        self.stop = self.start.astimezone(timezone)
+        stop = raw["stop"]
+        data["stop"] = parse_datetime(stop, '%Y-%m-%dT%H:%M:%S%z')
 
-        self.duration = raw["duration"]
-        self.description = raw.get("description")
-        self.duronly = raw["duronly"]
+        data["duration"] = raw["duration"]
+        data["description"] = raw.get("description")
+        data["duronly"] = raw["duronly"]
+        data["tags"] = raw.get("tags")
 
-        self.tags = raw.get("tags")
+        at = raw["at"]
+        data["at"] = parse_datetime(at, '%Y-%m-%dT%H:%M:%S%z')
 
-        self.at = raw["at"]
-        self.at = datetime.strptime(self.at, '%Y-%m-%dT%H:%M:%S%z')
-
-        self.project_name = None
-        self.project_id = None
-        self.project_is_active = None
         if raw.get("pid"):
             pid = raw["pid"]
-            self.project_name = projects[pid].get("name")
-            self.project_id = pid
-            self.project_is_active = projects[pid].get("active")
+            data["project_name"] = projects[pid].get("name")
+            data["project_id"] = pid
+            data["project_is_active"] = projects[pid].get("active")
+
+        super().__init__(**data)
 
 
 def _fetch_projects():

@@ -1,15 +1,11 @@
 import json
 from typing import Optional
-import pytz
 
 from datetime import datetime
 from pydantic import BaseModel
 
-from hq.common import get_files
+from hq.common import get_files, parse_datetime
 from hq.config import Nubank as config
-
-
-timezone = pytz.timezone("America/Recife")
 
 
 class CardFeedEvent(BaseModel):
@@ -47,9 +43,9 @@ class CardFeedEvent(BaseModel):
 
         time = raw["time"]
         if '.' in time:
-            date_tz = datetime.strptime(time, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=timezone)
+            date_tz = parse_datetime(time, "%Y-%m-%dT%H:%M:%S.%fZ")
         else:
-            date_tz = datetime.strptime(time, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone)
+            date_tz = parse_datetime(time, "%Y-%m-%dT%H:%M:%SZ")
         data["date_tz"] = date_tz
 
         if raw.get("amount"):
@@ -105,18 +101,19 @@ class Bills(BaseModel):
             data["remaining_minimum_payment"] = remaining_minimum_payment
 
         due_date = raw["due_date"]
-        due_date = datetime.strptime(due_date, "%Y-%m-%d").replace(tzinfo=timezone)
+        due_date = parse_datetime(due_date, "%Y-%m-%d")
 
         open_date = raw["open_date"]
-        open_date = datetime.strptime(open_date, "%Y-%m-%d").replace(tzinfo=timezone)
+        open_date = parse_datetime(open_date, "%Y-%m-%d")
 
         close_date = raw["close_date"]
-        close_date = datetime.strptime(close_date, "%Y-%m-%d").replace(tzinfo=timezone)
+        close_date = parse_datetime(close_date, "%Y-%m-%d")
 
         effective_due_date = raw["effective_due_date"]
-        effective_due_date = datetime.strptime(effective_due_date, "%Y-%m-%d").replace(tzinfo=timezone)
+        effective_due_date = parse_datetime(effective_due_date, "%Y-%m-%d")
 
         data["due_date"] = due_date
+        data["datetime"] = close_date
         data["open_date"] = open_date
         data["close_date"] = close_date
         data["effective_due_date"] = effective_due_date
@@ -142,7 +139,7 @@ class AccountEvent(BaseModel):
         data["detail"] = raw["detail"]
 
         postDate = raw["postDate"]
-        data["date_tz"] = datetime.strptime(postDate, "%Y-%m-%d").replace(tzinfo=timezone)
+        data["date_tz"] = parse_datetime(postDate, "%Y-%m-%d")
 
         if raw.get("amount"):
             data["amount"] = round(float(raw["amount"]), 2)
@@ -187,31 +184,47 @@ class BillDetails(BaseModel):
 
         summary = raw.get("summary")
         due_date = summary["due_date"]
-        data["due_date"] = datetime.strptime(due_date, "%Y-%m-%d").replace(tzinfo=timezone)
+        data["due_date"] = parse_datetime(due_date, "%Y-%m-%d")
 
         open_date = summary["open_date"]
-        data["open_date"] = datetime.strptime(open_date, "%Y-%m-%d").replace(tzinfo=timezone)
+        data["open_date"] = parse_datetime(open_date, "%Y-%m-%d")
 
         close_date = summary["close_date"]
-        data["close_date"] = datetime.strptime(close_date, "%Y-%m-%d").replace(tzinfo=timezone)
+        data["close_date"] = parse_datetime(close_date, "%Y-%m-%d")
 
         effective_due_date = summary["effective_due_date"]
-        data["effective_due_date"] = datetime.strptime(effective_due_date, "%Y-%m-%d").replace(tzinfo=timezone)
+        data["effective_due_date"] = parse_datetime(effective_due_date, "%Y-%m-%d")
 
         data["late_interest_rate"] = round(float(summary["late_interest_rate"]), 2)
         data["past_balance"] = round(float(summary["past_balance"]), 2)
         data["late_fee"] = round(float(summary["late_fee"]), 2)
-        data["total_balance"] = round(float(summary["total_balance"]), 2)
         data["interest_rate"] = round(float(summary["interest_rate"]), 2)
-        data["total_cumulative"] = round(float(summary["total_cumulative"]), 2)
-        data["paid"] = round(float(summary["paid"]), 2)
+
+        total_balance = str(summary["total_balance"])
+        data["total_balance"] = float(total_balance[:-2] + '.' + total_balance[-2:])
+
+        total_cumulative = str(summary["total_cumulative"])
+        data["total_cumulative"] = float(total_cumulative[:-2] + '.' + total_cumulative[-2:])
+
+        if summary["paid"] > 0:
+            paid = str(summary["paid"])
+            data["paid"] = float(paid[:-2] + '.' + paid[-2:])
+        else:
+            data["paid"] = summary["paid"]
+
+        if summary["minimum_payment"] > 0:
+            minimum_payment = str(summary["minimum_payment"])
+            data["minimum_payment"] = float(minimum_payment[:-2] + '.' + minimum_payment[-2:])
+        else:
+            data["minimum_payment"] = summary["minimum_payment"]
+
         data["interest"] = round(float(summary["interest"]), 2)
-        data["minimum_payment"] = round(float(summary["minimum_payment"]), 2)
 
         line_items = []
         for item in raw.get("line_items", []):
+            amount = str(item["amount"])
             line_items.append({
-                "amount": item["amount"],
+                "amount": float(amount[:-2] + '.' + amount[-2:]),
                 "index": item.get("index"),
                 "title": item.get("title"),
                 "post_date": item.get("post_date"),

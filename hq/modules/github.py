@@ -1,15 +1,10 @@
-import sys
 import json
 import pytz
 
 from datetime import datetime
 
-sys.path.append('/home/sarai/github-projects/hq')
-from hq.common import get_files
+from hq.common import get_files, parse_datetime
 from hq.config import Github as config
-
-
-timezone = pytz.timezone("America/Recife")
 
 
 def get_events_file_paths():
@@ -40,8 +35,7 @@ class Notification:
         }
         self.url = raw["url"]
         self.updated_at_str = raw["updated_at"]
-        self.updated_at = datetime.strptime(self.updated_at_str, '%Y-%m-%dT%H:%M:%S%z')
-        self.updated_at = self.updated_at.astimezone(timezone)
+        self.updated_at = parse_datetime(self.updated_at_str, '%Y-%m-%dT%H:%M:%S%z')
 
         if details:
             key = self.github_id + self.updated_at_str
@@ -65,8 +59,7 @@ class Event:
         self.actor = raw["actor"].get("login")
         self.public = raw["public"]
         self.created_at = raw["created_at"]
-        self.created_at = datetime.strptime(self.created_at, '%Y-%m-%dT%H:%M:%S%z')
-        self.created_at = self.created_at.astimezone(timezone)
+        self.created_at = parse_datetime(self.created_at, '%Y-%m-%dT%H:%M:%S%z')
         self.repo = {
             "id": raw.get("repo", {}).get("id"),
             "name": raw.get("repo", {}).get("name"),
@@ -102,18 +95,15 @@ class Event:
         elif self.type == "IssueCommentEvent":
             created_at = raw["payload"]["issue"]["created_at"]
             if created_at:
-                created_at = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S%z')
-                created_at = created_at.astimezone(timezone)
+                created_at = parse_datetime(created_at, '%Y-%m-%dT%H:%M:%S%z')
 
             updated_at = raw["payload"]["issue"]["updated_at"]
             if updated_at:
-                updated_at = datetime.strptime(updated_at, '%Y-%m-%dT%H:%M:%S%z')
-                updated_at = updated_at.astimezone(timezone)
+                updated_at = parse_datetime(updated_at, '%Y-%m-%dT%H:%M:%S%z')
 
             closed_at = raw["payload"]["issue"]["closed_at"]
             if closed_at:
-                closed_at = datetime.strptime(closed_at, '%Y-%m-%dT%H:%M:%S%z')
-                closed_at = closed_at.astimezone(timezone)
+                closed_at = parse_datetime(closed_at, '%Y-%m-%dT%H:%M:%S%z')
 
             assignee = raw["payload"]["issue"]["assignee"]
             self.issue_comment_data = {
@@ -140,23 +130,19 @@ class Event:
         elif self.type == "PullRequestEvent":
             created_at = raw["payload"]["pull_request"]["created_at"]
             if created_at:
-                created_at = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S%z')
-                created_at = created_at.astimezone(timezone)
+                created_at = parse_datetime(created_at, '%Y-%m-%dT%H:%M:%S%z')
 
             updated_at = raw["payload"]["pull_request"]["updated_at"]
             if updated_at:
-                updated_at = datetime.strptime(updated_at, '%Y-%m-%dT%H:%M:%S%z')
-                updated_at = updated_at.astimezone(timezone)
+                updated_at = parse_datetime(updated_at, '%Y-%m-%dT%H:%M:%S%z')
 
             closed_at = raw["payload"]["pull_request"]["closed_at"]
             if closed_at:
-                closed_at = datetime.strptime(closed_at, '%Y-%m-%dT%H:%M:%S%z')
-                closed_at = closed_at.astimezone(timezone)
+                closed_at = parse_datetime(closed_at, '%Y-%m-%dT%H:%M:%S%z')
 
             merged_at = raw["payload"]["pull_request"]["merged_at"]
             if merged_at:
-                merged_at = datetime.strptime(merged_at, '%Y-%m-%dT%H:%M:%S%z')
-                merged_at = merged_at.astimezone(timezone)
+                merged_at = parse_datetime(merged_at, '%Y-%m-%dT%H:%M:%S%z')
 
             assignee = raw["payload"]["pull_request"]["assignee"]
             self.pull_request_data = {
@@ -204,13 +190,11 @@ class Event:
         elif self.type == "PullRequestReviewCommentEvent":
             created_at = raw["payload"].get("comment", {}).get("created_at")
             if created_at:
-                created_at = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S%z')
-                created_at = created_at.astimezone(timezone)
+                created_at = parse_datetime(created_at, '%Y-%m-%dT%H:%M:%S%z')
 
             updated_at = raw["payload"].get("comment", {}).get("updated_at")
             if updated_at:
-                updated_at = datetime.strptime(updated_at, '%Y-%m-%dT%H:%M:%S%z')
-                updated_at = updated_at.astimezone(timezone)
+                updated_at = parse_datetime(updated_at, '%Y-%m-%dT%H:%M:%S%z')
 
             self.pull_request_review_comment_data = {
                 "action": raw["payload"]["action"],
@@ -226,23 +210,19 @@ class Event:
 
             created_at = raw["payload"]["pull_request"]["created_at"]
             if created_at:
-                created_at = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S%z')
-                created_at = created_at.astimezone(timezone)
+                created_at = parse_datetime(created_at, '%Y-%m-%dT%H:%M:%S%z')
 
             updated_at = raw["payload"]["pull_request"]["updated_at"]
             if updated_at:
-                updated_at = datetime.strptime(updated_at, '%Y-%m-%dT%H:%M:%S%z')
-                updated_at = updated_at.astimezone(timezone)
+                updated_at = parse_datetime(updated_at, '%Y-%m-%dT%H:%M:%S%z')
 
             closed_at = raw["payload"]["pull_request"]["closed_at"]
             if closed_at:
-                closed_at = datetime.strptime(closed_at, '%Y-%m-%dT%H:%M:%S%z')
-                closed_at = closed_at.astimezone(timezone)
+                closed_at = parse_datetime(closed_at, '%Y-%m-%dT%H:%M:%S%z')
 
             merged_at = raw["payload"]["pull_request"]["merged_at"]
             if merged_at:
-                merged_at = datetime.strptime(merged_at, '%Y-%m-%dT%H:%M:%S%z')
-                merged_at = merged_at.astimezone(timezone)
+                merged_at = parse_datetime(merged_at, '%Y-%m-%dT%H:%M:%S%z')
 
             assignee = raw["payload"]["pull_request"]["assignee"]
             self.pull_request_review_comment_data["pull_request"] = {
@@ -280,28 +260,23 @@ class Event:
         elif self.type == "PullRequestReviewEvent":
             submitted_at = raw["payload"].get("review", {}).get("submitted_at")
             if submitted_at:
-                submitted_at = datetime.strptime(submitted_at, '%Y-%m-%dT%H:%M:%S%z')
-                submitted_at = submitted_at.astimezone(timezone)
+                submitted_at = parse_datetime(submitted_at, '%Y-%m-%dT%H:%M:%S%z')
 
             created_at = raw["payload"]["pull_request"]["created_at"]
             if created_at:
-                created_at = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S%z')
-                created_at = created_at.astimezone(timezone)
+                created_at = parse_datetime(created_at, '%Y-%m-%dT%H:%M:%S%z')
 
             updated_at = raw["payload"]["pull_request"]["updated_at"]
             if updated_at:
-                updated_at = datetime.strptime(updated_at, '%Y-%m-%dT%H:%M:%S%z')
-                updated_at = updated_at.astimezone(timezone)
+                updated_at = parse_datetime(updated_at, '%Y-%m-%dT%H:%M:%S%z')
 
             closed_at = raw["payload"]["pull_request"]["closed_at"]
             if closed_at:
-                closed_at = datetime.strptime(closed_at, '%Y-%m-%dT%H:%M:%S%z')
-                closed_at = closed_at.astimezone(timezone)
+                closed_at = parse_datetime(closed_at, '%Y-%m-%dT%H:%M:%S%z')
 
             merged_at = raw["payload"]["pull_request"]["merged_at"]
             if merged_at:
-                merged_at = datetime.strptime(merged_at, '%Y-%m-%dT%H:%M:%S%z')
-                merged_at = merged_at.astimezone(timezone)
+                merged_at = parse_datetime(merged_at, '%Y-%m-%dT%H:%M:%S%z')
 
             assignee = raw["payload"]["pull_request"]["assignee"]
             self.pull_request_review_event_data = {

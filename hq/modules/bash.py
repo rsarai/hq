@@ -1,59 +1,57 @@
-import sys
 import pytz
 
+from typing import Optional
 from datetime import datetime
+from pydantic import BaseModel
 
-sys.path.append('/home/sarai/github-projects/hq')
-
-from hq.common import get_files
+from hq.common import get_files, parse_datetime
 from hq.config import BashHistory as config
 
 
 timezone = pytz.timezone("America/Recife")
 
 
-class Command:
+class Command(BaseModel):
+    raw: str
+    host: Optional[str]
+    folder: Optional[str]
+    cmd: Optional[str]
+    date_tz: Optional[datetime]
 
     def __init__(self, raw):
-        self.raw = raw
+        raw = raw
+        data = {"raw": raw}
 
         try:
-            self.date_str = raw.split(" ", 1)[0]
+            date_str = raw.split(" ", 1)[0]
             remaining = raw.split(" ", 1)[1]
-            self.date = datetime.strptime(
-                self.date_str,
-                "%Y-%m-%d.%H:%M:%S"
-            )
-            self.host = "Avell G1711: rsarai"
-            self.folder = remaining.split("  ", 1)[0]
-            self.cmd = remaining.strip().split("  ", 1)[1]
-            self.date_tz = timezone.localize(self.date)
+            data["date_tz"] = parse_datetime(date_str, "%Y-%m-%d.%H:%M:%S")
+            data["host"] = "Avell G1711: rsarai"
+            data["folder"] = remaining.split("  ", 1)[0]
+            data["cmd"] = remaining.strip().split("  ", 1)[1]
         except ValueError:
-            self.host = "Avell G1711: rsarai"
+            data["host"] = "Avell G1711: rsarai"
             remaining = raw.split(" ", 1)[1]
 
-            self.date_str = remaining.split(" ", 1)[0]
+            date_str = remaining.split(" ", 1)[0]
             remaining = remaining.split(" ", 1)[1]
             try:
-                self.date = datetime.strptime(
-                    self.date_str,
-                    "%Y-%m-%d.%H:%M:%S"
-                )
-                self.folder = remaining.split("  ", 1)[0]
-                self.cmd = remaining.strip().split("  ", 1)[1]
-                self.date_tz = timezone.localize(self.date)
+                data["date_tz"] = parse_datetime(date_str, "%Y-%m-%d.%H:%M:%S")
+                data["folder"] = remaining.split("  ", 1)[0]
+                data["cmd"] = remaining.strip().split("  ", 1)[1]
             except ValueError:
-                self.cmd =  "    " + raw
-                self.folder = ""
-                self.date_tz = None
-                self.date = None
+                data["cmd"] =  "    " + raw
+                data["folder"] = ""
+                data["date_tz"] = None
 
-        strip_cmd = self.cmd.strip()
+        strip_cmd = data["cmd"].strip()
         try:
             int(strip_cmd[:4])
-            self.cmd = strip_cmd[4:].strip()
+            data["cmd"] = strip_cmd[4:].strip()
         except Exception:
             pass
+
+        super().__init__(**data)
 
 
 def get_file_paths():
@@ -72,7 +70,7 @@ def process(input_files=None):
                 continue
 
             cmd_object = Command(raw=cmd_str)
-            unique_set = f"""{cmd_object.cmd}, {cmd_object.date_str}, {cmd_object.folder}"""
+            unique_set = f"""{cmd_object.cmd}, {cmd_object.date_tz}, {cmd_object.folder}"""
             if unique_set in handled:
                 # ids are reseted and are not consisted through different devices
                 # uniqueness validation should be achieved by content

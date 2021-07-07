@@ -1,5 +1,7 @@
-import os
 import re
+import pytz
+
+from datetime import datetime
 
 from orger import Mirror
 from orger import inorganic
@@ -16,6 +18,18 @@ from hq.config import SecondBrain as second_brain
 from hq.settings import IMAGES_FOLDER
 
 DEFAULT_GLOB = '*'
+
+
+def parse_datetime(date: str, format: str, timezone:str = 'America/Recife'):
+    zone = pytz.timezone(timezone)
+    new_datetime = datetime.strptime(date, format)
+    try:
+        parsed_date = zone.localize(new_datetime)
+    except ValueError:
+        parsed_date = new_datetime
+
+    return parsed_date
+
 
 def get_files(dir_path, glob=DEFAULT_GLOB, sort=False):
     sources = None

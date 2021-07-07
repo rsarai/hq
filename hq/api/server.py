@@ -1,4 +1,5 @@
 import json
+import pytz
 
 from datetime import datetime
 
@@ -38,9 +39,13 @@ def retrieve():
 
     date = kwargs.pop("date", None)
     if date:
-        d = datetime.strptime(date, '%Y-%m-%d')
-        kwargs.update({"datetime": {"$lte": d}})
+        timezone = pytz.timezone("America/Recife")
+        d = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+        parsed_date = timezone.localize(d)
+        utc_date = parsed_date.astimezone(pytz.UTC)
+        kwargs.update({"datetime": {"$lte": utc_date}})
 
+    print(kwargs)
     count = collection.find(kwargs).sort('datetime', pymongo.DESCENDING).count()
     data = (
         collection

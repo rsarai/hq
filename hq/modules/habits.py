@@ -24,12 +24,11 @@ Export Format:
 ['id', 'habit', 'timestamp', 'value']
 
 """
-import sys
 import pytz
 
 from datetime import datetime
-
-sys.path.append('/home/sarai/github-projects/hq')
+from pydantic import BaseModel
+from typing import Optional
 
 from hq.common import get_files
 from hq.sqlite_db import get_readonly_connection
@@ -54,17 +53,22 @@ JOIN Habits AS h
 ON r.habit = h.id;
 """
 
-class Habit:
+class Habit(BaseModel):
+    raw: list
+    date_tz: Optional[datetime]
+    description: Optional[str]
+    name: Optional[str]
 
     def __init__(self, raw):
-        self.raw = raw
-        self.timestamp = raw[1]
+        data = {"raw": raw}
 
+        timestamp = raw[1]
         # https://stackoverflow.com/a/31548402/7537918
-        self.date_tz = datetime.fromtimestamp(self.timestamp/1000, timezone)
+        data["date_tz"] = datetime.fromtimestamp(timestamp/1000, timezone)
+        data["description"] = raw[3]
+        data["name"] = raw[4]
 
-        self.description = raw[3]
-        self.name = raw[4]
+        super().__init__(**data)
 
 
 def process(input_files=None):

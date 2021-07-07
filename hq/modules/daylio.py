@@ -3,13 +3,13 @@ format:
 full_date,date,weekday,time,mood,activities,note_title,note
 """
 import csv
-import sys
 import pytz
 
 from datetime import datetime
+from pydantic import BaseModel
+from typing import Optional
 
-sys.path.append('/home/sarai/github-projects/hq')
-from hq.common import get_files
+from hq.common import get_files, parse_datetime
 from hq.config import Daylio as config
 
 
@@ -24,20 +24,27 @@ def get_file_paths():
     return [max(get_files(config.export_path, "*.csv"))]
 
 
-class Mood:
+class Mood(BaseModel):
+    raw: dict
+    note: Optional[str]
+    things_i_did: Optional[str]
+    mood: Optional[str]
+    date_tz: Optional[datetime]
+
     def __init__(self, raw):
-        self.raw = raw
-        self.provider = "daylio"
-        self.note = raw["note"]
-        self.things_i_did = raw["activities"]
-        self.mood = raw["mood"]
+        data = {"raw": raw}
+        data["note"] = raw["note"]
+        data["things_i_did"] = raw["activities"]
+        data["mood"] = raw["mood"]
 
         full_date = raw["\ufefffull_date"]
         time = raw["time"]
-        self.date_tz = datetime.strptime(
+        data["date_tz"] = parse_datetime(
             full_date + "." + time,
             "%Y-%m-%d.%H:%M"
-        ).replace(tzinfo=timezone)
+        )
+
+        super().__init__(**data)
 
 
 def process(input_files=None):

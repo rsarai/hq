@@ -4,14 +4,13 @@ sources:
  - https://gist.github.com/dropmeaword/9372cbeb29e8390521c2
  - https://web.archive.org/web/20200923160840/https://www.lowmanio.co.uk/blog/entries/how-google-chrome-stores-web-history/
 """
-
-import sys
 import pytz
+
 from datetime import datetime
+from pydantic import BaseModel
+from typing import Optional
 
-sys.path.append('/home/sarai/github-projects/hq')
-
-from hq.common import get_files
+from hq.common import get_files, parse_datetime
 from hq.sqlite_db import get_readonly_connection
 from hq.config import ChromeHistory as config
 
@@ -40,26 +39,38 @@ KEYS = [
 timezone = pytz.timezone("America/Recife")
 
 
-class Link:
-    def __init__(self, raw):
-        self.raw = raw
+class Link(BaseModel):
+    raw: dict
+    url: Optional[str]
+    title: Optional[str]
+    visit_count: Optional[int]
+    typed_count: Optional[int]
+    hidden: Optional[int]
+    transition: Optional[int]
+    publicly_routable: Optional[int]
+    date_tz: Optional[datetime]
+    visit_time: Optional[datetime]
 
-        self.provider = "google chrome"
-        self.url = raw["url"]
-        self.title = raw["title"]
-        self.visit_count = raw["visit_count"]
-        self.typed_count = raw["typed_count"]
-        self.hidden = raw["hidden"]
-        self.transition = raw["transition"]
-        self.publicly_routable = raw["publicly_routable"]
+    def __init__(self, raw):
+        data = {"raw": raw}
+
+        data["url"] = raw["url"]
+        data["title"] = raw["title"]
+        data["visit_count"] = raw["visit_count"]
+        data["typed_count"] = raw["typed_count"]
+        data["hidden"] = raw["hidden"]
+        data["transition"] = raw["transition"]
+        data["publicly_routable"] = raw["publicly_routable"]
 
         last_visited = raw["last_visited"]
-        last_visited = datetime.strptime(last_visited, '%Y-%m-%d %H:%M:%S')
-        self.date_tz = timezone.localize(last_visited)
+        last_visited = parse_datetime(last_visited, '%Y-%m-%d %H:%M:%S')
+        data["date_tz"] = last_visited
 
         visit_time = raw["visit_time"]
-        visit_time = datetime.strptime(visit_time, '%Y-%m-%d %H:%M:%S')
-        self.visit_time = timezone.localize(visit_time)
+        visit_time = parse_datetime(visit_time, '%Y-%m-%d %H:%M:%S')
+        data["visit_time"] = visit_time
+
+        super().__init__(**data)
 
 
 def get_file_paths():
@@ -79,7 +90,7 @@ def process(input_files=None):
                 res = dict(zip(KEYS, row))
 
                 visit_time = res["visit_time"]
-                visit_time = datetime.strptime(visit_time, '%Y-%m-%d %H:%M:%S')
+                visit_time = parse_datetime(visit_time, '%Y-%m-%d %H:%M:%S')
                 unique_set = f"""{res["last_visited"]}, {res["url"]}, {res["title"]}"""
 
                 if unique_set in handled:
