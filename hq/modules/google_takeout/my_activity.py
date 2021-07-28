@@ -13,7 +13,7 @@ def get_file_paths():
     return [max(get_files(config.export_path, "takeout*"))]
 
 
-def process_my_activities(input_files=None):
+def simplify_my_activities(input_files=None):
     if not input_files:
         input_files = get_file_paths()
 

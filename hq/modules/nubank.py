@@ -49,12 +49,12 @@ class CardFeedEvent(BaseModel):
         data["date_tz"] = date_tz
 
         if raw.get("amount"):
-            amount = round(float(raw["amount"]), 2)
-            data["amount"] = amount
+            amount = str(raw["amount"])
+            data["amount"] = float(amount[:-2] + '.' + amount[-2:])
 
         if raw.get("amount_without_iof"):
-            amount_without_iof = round(float(raw["amount_without_iof"]), 2)
-            data["amount_without_iof"] = amount_without_iof
+            amount_without_iof = str(raw["amount_without_iof"])
+            data["amount_without_iof"] = float(amount_without_iof[:-2] + '.' + amount_without_iof[-2:])
 
         super().__init__(**data)
 
@@ -77,14 +77,15 @@ class Bills(BaseModel):
 
     def __init__(self, raw):
         data = {"raw": raw}
-        paid = round(float(raw["paid"]), 2)
+
+        paid = str(raw["paid"])
         interest = round(float(raw["interest"]), 2)
         past_balance = round(float(raw["past_balance"]), 2)
         total_balance = round(float(raw["total_balance"]), 2)
         interest_rate = round(float(raw["interest_rate"]), 2)
         minimum_payment = round(float(raw["minimum_payment"]), 2)
         total_cumulative = round(float(raw["total_cumulative"]), 2)
-        data["paid"] = paid
+        data["paid"] = float(paid[:-2] + '.' + paid[-2:])
         data["interest"] = interest
         data["past_balance"] = past_balance
         data["total_balance"] = total_balance
@@ -93,12 +94,12 @@ class Bills(BaseModel):
         data["total_cumulative"] = total_cumulative
 
         if raw.get("remaining_balance"):
-            remaining_balance = round(float(raw["remaining_balance"]), 2)
-            data["remaining_balance"] = remaining_balance
+            remaining_balance = str(raw["remaining_balance"])
+            data["remaining_balance"] = float(remaining_balance[:-2] + '.' + remaining_balance[-2:])
 
         if raw.get("remaining_minimum_payment"):
-            remaining_minimum_payment = round(float(raw["remaining_minimum_payment"]), 2)
-            data["remaining_minimum_payment"] = remaining_minimum_payment
+            remaining_minimum_payment = str(raw["remaining_minimum_payment"])
+            data["remaining_minimum_payment"] = float(remaining_minimum_payment[:-2] + '.' + remaining_minimum_payment[-2:])
 
         due_date = raw["due_date"]
         due_date = parse_datetime(due_date, "%Y-%m-%d")
@@ -142,7 +143,9 @@ class AccountEvent(BaseModel):
         data["date_tz"] = parse_datetime(postDate, "%Y-%m-%d")
 
         if raw.get("amount"):
-            data["amount"] = round(float(raw["amount"]), 2)
+            amount = str(raw["amount"])
+            amount = amount if '.' not in amount else amount.replace('.', '0')
+            data["amount"] = float(amount[:-2] + '.' + amount[-2:])
 
         if raw.get("originAccount"):
             origin_account = raw["originAccount"]

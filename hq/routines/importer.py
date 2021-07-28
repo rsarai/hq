@@ -25,19 +25,21 @@ def mount_memex():
     collection.remove({})
     collection.insert_many(list(content))
     memex_manager.mark_import_as_completed()
-    # collection.create_index([
-    #     ("provider", pymongo.TEXT),
-    #     ("activity", pymongo.TEXT),
-    #     ("principal_entity", pymongo.TEXT),
-    #     ("activity_entities", pymongo.TEXT),
-    #     ("project_name", pymongo.TEXT),
-    #     ("website_title", pymongo.TEXT),
-    #     ("website_url", pymongo.TEXT),
-    #     ("things_i_did", pymongo.TEXT),
-    #     ("description", pymongo.TEXT),
-    #     ("detail", pymongo.TEXT),
-    #     ("project_name", pymongo.TEXT),
-    # ], { "default_language": "english" }, unique=True)
+
+    collection.drop_indexes()
+    collection.create_index([
+        ("provider", pymongo.TEXT),
+        ("activity", pymongo.TEXT),
+        ("principal_entity", pymongo.TEXT),
+        ("activity_entities", pymongo.TEXT),
+        ("project_name", pymongo.TEXT),
+        ("website_title", pymongo.TEXT),
+        ("website_url", pymongo.TEXT),
+        ("things_i_did", pymongo.TEXT),
+        ("description", pymongo.TEXT),
+        ("detail", pymongo.TEXT),
+        ("project_name", pymongo.TEXT),
+    ])
 
 
 def update_memex():

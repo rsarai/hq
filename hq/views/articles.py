@@ -5,7 +5,7 @@ import shutil
 from pathlib import Path
 
 from hq.modules import notion_articles
-from hq.common import SimpleOrgNode, Replica, dt_heading
+from hq.common import SimpleOrgNode, Replica
 from hq.common import get_files
 from hq.settings import IMAGES_FOLDER
 

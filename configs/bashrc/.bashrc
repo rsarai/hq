@@ -304,4 +304,4 @@ alias brain_sync="bash ~/github-projects/second-brain/gitsync.sh new"
 alias out="python3 ponto.py"
 
 
-export PROMPT_COMMAND='if [ "$(id -u)" -ne 0 ]; then echo "$(hostname) $(date "+%Y-%m-%d.%H:%M:%S") $(pwd) $(history 1)" >> ~/.logs/bash-history.log; fi'
+export PROMPT_COMMAND='if [ "$(id -u)" -ne 0 ]; then echo "$(hostname) $(date "+%Y-%m-%d.%H:%M:%S") $(pwd) $(history 1)" >> ~/.logs/bash-history-$(date "+%Y-%m-%d").log; fi'

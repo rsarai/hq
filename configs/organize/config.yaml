@@ -15,4 +15,15 @@ rules:
               with zipfile.ZipFile(path, 'r') as zip_ref:
                   zip_ref.extractall('/home/sarai/Documents/02 Areas/digital_life/notion_articles')
           - move: ~/Documents/02 Areas/digital_life/notion_articles/exports/
-
+    - folders: ~/Downloads
+      subfolders: true
+      filters:
+          - extension:
+                - png
+                - jpg
+          - filename:
+                contains:
+                    - research-imgs
+                case_sensitive: false
+      actions:
+          - move: ~/Downloads/research-imgs/

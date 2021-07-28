@@ -100,6 +100,7 @@ def process_toggl(data_iterable=None):
         data["activity"] = "tracked"
         data["principal_entity"] = "Rebeca Sarai"
         data["activity_entities"] = activity_entities
+        data["datetime"] = entry.at
         data["timestamp_utc"] = str(entry.at.astimezone(pytz.utc).timestamp())
         data["timezone"] = "America/Recife"
         data["device_name"] = "Web App"

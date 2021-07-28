@@ -1,7 +1,9 @@
 import json
+from typing import Optional
 import pytz
 
 from datetime import datetime
+from pydantic import BaseModel
 
 from hq.common import get_files, parse_datetime
 from hq.config import Github as config
@@ -19,13 +21,21 @@ def get_notification_detail_file_paths():
     return get_files(config.export_path + "/notifications/", "*_details.json")
 
 
-class Notification:
+class Notification(BaseModel):
+    raw: dict
+    github_id: Optional[int]
+    reason: Optional[str]
+    repository: Optional[dict]
+    url: Optional[str]
+    updated_at_str: Optional[str]
+    updated_at: Optional[datetime]
+    subject: Optional[dict]
 
     def __init__(self, raw, details) -> None:
-        self.raw = raw
-        self.github_id = raw["id"]
-        self.reason = raw["reason"]
-        self.repository = {
+        data = {"raw": raw}
+        data["github_id"] = raw["id"]
+        data["reason"] = raw["reason"]
+        data["repository"] = {
             "id": raw.get("repository", {}).get("id"),
             "name": raw.get("repository", {}).get("name"),
             "full_name": raw.get("repository", {}).get("full_name"),
@@ -33,66 +43,76 @@ class Notification:
             "description": raw.get("repository", {}).get("description"),
             "url": raw.get("repository", {}).get("html_url"),
         }
-        self.url = raw["url"]
-        self.updated_at_str = raw["updated_at"]
-        self.updated_at = parse_datetime(self.updated_at_str, '%Y-%m-%dT%H:%M:%S%z')
+        data["url"] = raw["url"]
+        data["updated_at_str"] = raw["updated_at"]
+        data["updated_at"] = parse_datetime(data["updated_at_str"], '%Y-%m-%dT%H:%M:%S%z')
 
         if details:
-            key = self.github_id + self.updated_at_str
+            key = data["github_id"] + data["updated_at_str"]
 
             if details.get(key):
                 original = raw["subject"].copy()
                 original.update(details[key])
-                self.subject = original
+                data["subject"] = original
             else:
-                self.subject = raw["subject"]
+                data["subject"] = raw["subject"]
+        elif type(raw["subject"]):
+            data["subject"] = raw["subject"]["title"]
         else:
-            self.subject = raw["subject"]
+            data["subject"] = raw["subject"]
+
+        super().__init__(**data)
 
 
-class Event:
+class Event(BaseModel):
+    raw: dict
+    github_id: Optional[int]
+    type: Optional[str]
+    actor: Optional[str]
+    public: Optional[bool]
+    created_at: Optional[datetime]
+    repo: Optional[dict]
+    org: Optional[str]
+    create_data: Optional[dict]
+    delete_data: Optional[dict]
+    issue_comment_data: Optional[dict]
+    pull_request_data: Optional[dict]
+    pull_request_review_comment_data: Optional[dict]
+    pull_request_review_event_data: Optional[dict]
+    push_data: Optional[dict]
+    watch_data: Optional[dict]
 
     def __init__(self, raw) -> None:
-        self.raw = raw
-        self.github_id = raw["id"]
-        self.type = raw["type"]
-        self.actor = raw["actor"].get("login")
-        self.public = raw["public"]
-        self.created_at = raw["created_at"]
-        self.created_at = parse_datetime(self.created_at, '%Y-%m-%dT%H:%M:%S%z')
-        self.repo = {
+        data = {"raw": raw}
+        data["github_id"] = raw["id"]
+        data["type"] = raw["type"]
+        data["actor"] = raw["actor"].get("login")
+        data["public"] = raw["public"]
+        data["created_at"] = raw["created_at"]
+        data["created_at"] = parse_datetime(data["created_at"], '%Y-%m-%dT%H:%M:%S%z')
+        data["repo"] = {
             "id": raw.get("repo", {}).get("id"),
             "name": raw.get("repo", {}).get("name"),
             "url": raw.get("repo", {}).get("url"),
         }
 
-        self.org = None
         if raw.get("org"):
-            self.org = raw["org"].get("login")
+            data["org"] = raw["org"].get("login")
 
-        self.create_data = None
-        self.delete_data = None
-        self.issue_comment_data = None
-        self.pull_request_data = None
-        self.pull_request_review_comment_data = None
-        self.pull_request_review_event_data = None
-        self.push_data = None
-        self.watch_data = None
-
-        if self.type == "CreateEvent":
-            self.create_data = {
+        if data["type"] == "CreateEvent":
+            data["create_data"] = {
                 "ref": raw["payload"]["ref"],
                 "ref_type": raw["payload"]["ref_type"],
                 "master_branch": raw["payload"]["master_branch"],
                 "description": raw["payload"]["description"],
             }
-        elif self.type == "DeleteEvent":
-            self.delete_data = {
+        elif data["type"] == "DeleteEvent":
+            data["delete_data"] = {
                 "ref": raw["payload"]["ref"],
                 "ref_type": raw["payload"]["ref_type"],
                 "pusher_type": raw["payload"]["pusher_type"],
             }
-        elif self.type == "IssueCommentEvent":
+        elif data["type"] == "IssueCommentEvent":
             created_at = raw["payload"]["issue"]["created_at"]
             if created_at:
                 created_at = parse_datetime(created_at, '%Y-%m-%dT%H:%M:%S%z')
@@ -106,7 +126,7 @@ class Event:
                 closed_at = parse_datetime(closed_at, '%Y-%m-%dT%H:%M:%S%z')
 
             assignee = raw["payload"]["issue"]["assignee"]
-            self.issue_comment_data = {
+            data["issue_comment_data"] = {
                 "action": raw["payload"]["action"],
                 "issue": {
                     "number": raw["payload"]["issue"]["number"],
@@ -127,7 +147,7 @@ class Event:
                     "body": raw["payload"]["issue"]["body"],
                 }
             }
-        elif self.type == "PullRequestEvent":
+        elif data["type"] == "PullRequestEvent":
             created_at = raw["payload"]["pull_request"]["created_at"]
             if created_at:
                 created_at = parse_datetime(created_at, '%Y-%m-%dT%H:%M:%S%z')
@@ -145,7 +165,7 @@ class Event:
                 merged_at = parse_datetime(merged_at, '%Y-%m-%dT%H:%M:%S%z')
 
             assignee = raw["payload"]["pull_request"]["assignee"]
-            self.pull_request_data = {
+            data["pull_request_data"] = {
                 "action": raw["payload"]["action"],
                 "number": raw["payload"]["number"],
                 "id": raw["payload"]["pull_request"]["id"],
@@ -187,7 +207,7 @@ class Event:
                 "deletions": raw["payload"]["pull_request"]["deletions"],
                 "changed_files": raw["payload"]["pull_request"]["changed_files"],
             }
-        elif self.type == "PullRequestReviewCommentEvent":
+        elif data["type"] == "PullRequestReviewCommentEvent":
             created_at = raw["payload"].get("comment", {}).get("created_at")
             if created_at:
                 created_at = parse_datetime(created_at, '%Y-%m-%dT%H:%M:%S%z')
@@ -196,7 +216,7 @@ class Event:
             if updated_at:
                 updated_at = parse_datetime(updated_at, '%Y-%m-%dT%H:%M:%S%z')
 
-            self.pull_request_review_comment_data = {
+            data["pull_request_review_comment_data"] = {
                 "action": raw["payload"]["action"],
                 "comment": {
                     "user": raw["payload"].get("comment", {}).get("user", {}).get("login"),
@@ -225,7 +245,7 @@ class Event:
                 merged_at = parse_datetime(merged_at, '%Y-%m-%dT%H:%M:%S%z')
 
             assignee = raw["payload"]["pull_request"]["assignee"]
-            self.pull_request_review_comment_data["pull_request"] = {
+            data["pull_request_review_comment_data"]["pull_request"] = {
                 "number": raw["payload"]["pull_request"]["number"],
                 "state": raw["payload"]["pull_request"]["state"],
                 "title": raw["payload"]["pull_request"]["title"],
@@ -257,7 +277,7 @@ class Event:
                 "base_sha": raw["payload"]["pull_request"].get("base", {}).get("sha"),
                 "author_association": raw["payload"]["pull_request"]["author_association"],
             }
-        elif self.type == "PullRequestReviewEvent":
+        elif data["type"] == "PullRequestReviewEvent":
             submitted_at = raw["payload"].get("review", {}).get("submitted_at")
             if submitted_at:
                 submitted_at = parse_datetime(submitted_at, '%Y-%m-%dT%H:%M:%S%z')
@@ -279,7 +299,7 @@ class Event:
                 merged_at = parse_datetime(merged_at, '%Y-%m-%dT%H:%M:%S%z')
 
             assignee = raw["payload"]["pull_request"]["assignee"]
-            self.pull_request_review_event_data = {
+            data["pull_request_review_event_data"] = {
                 "action": raw["payload"]["action"],
                 "review": {
                     "user": raw["payload"].get("review", {}).get("user", {}).get("login"),
@@ -321,20 +341,22 @@ class Event:
                     "author_association": raw["payload"]["pull_request"]["author_association"],
                 }
             }
-        elif self.type == "PushEvent":
-            self.push_data = {
+        elif data["type"] == "PushEvent":
+            data["push_data"] = {
                 "ref": raw.get("payload", {}).get("ref"),
                 "commits": [
                     commit["message"]
                     for commit in raw.get("payload", {}).get("commits", []) if commit
                 ],
             }
-        elif self.type == "WatchEvent":
-            self.watch_data = {
+        elif data["type"] == "WatchEvent":
+            data["watch_data"] = {
                 "action": raw.get("payload", {}).get("action"),
             }
         else:
             print("New event, you need to change the processing module and the importers")
+
+        super().__init__(**data)
 
 
 def _fetch_details():
