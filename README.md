@@ -19,9 +19,9 @@
     - Expose the database through a simple API
     - Integrates some tools to make my workflow easier
 
-- **How?**:
+- **How?**
 
-<img src="docs/this_project.png" alt="General structure" width="550"/>
+<img src="docs/this_project.png" alt="General structure" width="650"/>
 
 ### Notes
 
