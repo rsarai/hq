@@ -23,6 +23,11 @@
 
 <img src="docs/this_project.png" alt="General structure" width="650"/>
 
+### Web interface
+Besides doing regular searches directly on the database I have also built a simple React app.
+
+<img src="docs/interface.png" alt="Web interface" width="650"/>
+
 ### Notes
 
 #### TIL (29/06/2021):
