@@ -26,7 +26,7 @@
 ### Web interface
 Besides doing regular searches directly on the database I have also built a simple React app.
 
-<img src="docs/interface.png" alt="Web interface" width="650"/>
+<img src="docs/interface.png" alt="Web interface" width="850"/>
 
 ### Notes
 
