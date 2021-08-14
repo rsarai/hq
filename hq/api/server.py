@@ -33,23 +33,25 @@ https://medium.com/swlh/mongodb-pagination-fast-consistent-ece2a97070f3
 def retrieve():
     kwargs = request.args.to_dict(flat=True)
     page = int(kwargs.pop(page_query_param, 1))
-    qs = kwargs.pop("qs", None)
-    if qs:
-        kwargs.update({"$text": { "$search": qs }})
 
-    date = kwargs.pop("date", None)
-    if date:
-        timezone = pytz.timezone("America/Recife")
-        d = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
-        parsed_date = timezone.localize(d)
-        utc_date = parsed_date.astimezone(pytz.UTC)
-        kwargs.update({"datetime": {"$lte": utc_date}})
+    filters = {}
+    for key, value in kwargs.items():
+        if key and value == '' or key == 'qs':
+            filters.update({"$text": { "$search": key }})
+        elif key == 'date':
+            timezone = pytz.timezone("America/Recife")
+            d = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+            parsed_date = timezone.localize(d)
+            utc_date = parsed_date.astimezone(pytz.UTC)
+            filters.update({"datetime": {"$lte": utc_date}})
+        else:
+            filters[key] = value
 
-    print(kwargs)
-    count = collection.find(kwargs).sort('datetime', pymongo.DESCENDING).count()
+    print(filters)
+    count = collection.find(filters).sort('datetime', pymongo.DESCENDING).count()
     data = (
         collection
-        .find(kwargs)
+        .find(filters)
         .sort('datetime', pymongo.DESCENDING)
         .skip(page_size * (page - 1))
         .limit(page_size)
@@ -63,6 +65,3 @@ def retrieve():
     # Enable Access-Control-Allow-Originn
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
-
-
-
