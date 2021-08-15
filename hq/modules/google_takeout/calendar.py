@@ -81,7 +81,6 @@ class Event(BaseModel):
         data["geo"] = raw.geo
         data["name"] = raw.name
 
-        print(data.get('organizer'))
         super().__init__(**data)
 
 
