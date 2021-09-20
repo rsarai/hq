@@ -24,7 +24,7 @@ setup(
             'update_memex=hq.routines.importer:update_memex',
             'reset=hq.routines.importer:reset',
             'inc=hq.routines.incremental_notes:append',
-            'scan=hq.routines.scan_repos:run',
+            'scan=hq.routines.scan_repos:scan',
         ],
     },
 )

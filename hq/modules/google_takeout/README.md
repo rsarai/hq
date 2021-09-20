@@ -8,7 +8,7 @@ This is google default export for all your data. Request your Google data from h
 - Maps (My Locations)* (⌛)
 - Maps*  (⌛)
 - Location History* (⌛)
-- Google Play Store* (⌛)
+- Google Play Store* (✅)
 - Contacts
 - Google Accounts
 - Blogger
