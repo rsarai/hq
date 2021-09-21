@@ -9,11 +9,11 @@ from hq.modules import bash, habits, daylio, chrome, toggl, github, rescuetime, 
 @dataclass
 class ImportManager:
     has_bash: bool = True
-    has_habits: bool = True
-    has_daylio: bool = True
     has_chrome: bool = True
-    has_toggl: bool = True
+    has_daylio: bool = True
     has_github: bool = True
+    has_habits: bool = True
+    has_toggl: bool = True
     has_rescuetime: bool = True
     has_nubank: bool = True
     state_file: str = '.db.json'
