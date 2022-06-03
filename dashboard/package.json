@@ -36,11 +36,6 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "yarn lint-staged --verbose"
-    }
-  },
   "lint-staged": {
     "*.{js,jsx}": [
       "eslint --fix"
