@@ -49,6 +49,7 @@ def generate_export():
         if bill["_links"] == {}:
             continue
 
+        # TODO in one of those links, we have a url that should be replaced with "future" to fetch open bills
         due_date = bill["summary"]["due_date"]
         bill_detail = nu.get_bill_details(bill)
 
