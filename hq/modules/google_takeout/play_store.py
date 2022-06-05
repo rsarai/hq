@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 from hq.common import get_files, parse_datetime
 from hq.config import GoogleTakeout as config
+from hq.modules.google_takeout.utils import get_zip_file_paths
 
 
 KEY = "Google Play Store"
@@ -143,18 +144,10 @@ class Subscription(BaseModel):
         super().__init__(**data)
 
 
-def get_file_paths():
-    return [
-        max(get_files(config.export_path, "takeout*")),
-        max(get_files(config.export_path, "vinta*")),
-        max(get_files(config.export_path, "ecomp*")),
-    ]
-
-
 def process(input_files=None):
     CLASSES_FILES = [Purchase, Subscription, Review, Order, Install]
     if not input_files:
-        input_files = get_file_paths()
+        input_files = get_zip_file_paths(config.export_path)
 
     # for each account file export
     for zip_path in input_files:
