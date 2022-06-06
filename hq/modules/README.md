@@ -1,7 +1,5 @@
 ## Missing modules
 
-- Google Takeout
-- Wakatime
 - Spotify
 - Podcasts
 - Writing metrics
@@ -9,3 +7,4 @@
 - Work Punch Records
 - Goodreads
 - Mobile activity
+- LastFM
