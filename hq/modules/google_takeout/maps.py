@@ -12,6 +12,7 @@ from hq.config import GoogleTakeout as config
 from hq.modules.google_takeout.utils import get_zip_file_paths
 
 FOLDER_PREFIX = "Histórico de localização"
+MAPS_FOLDER_PREFIX = "Maps (Seus lugares)"
 SEMANTIC_FOLDERS_PREFIX = "Semantic Location History"
 
 """
@@ -21,6 +22,35 @@ SEMANTIC_FOLDERS_PREFIX = "Semantic Location History"
 """
 
 locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
+
+
+class Saved(BaseModel):
+    raw: dict
+    latitude: float
+    longitude: float
+    url: str
+    address: Optional[str]
+    name: str
+    country: Optional[str]
+
+    def __init__(self, raw):
+        data = {"raw": raw}
+
+        properties = raw.get("properties", {})
+        data["url"] = properties.get("Google Maps URL")
+
+        location = properties.get("Location")
+        data["address"] = location.get("Address")
+        data["name"] = location.get("Business Name") or properties.get("Title")
+        data["country"] = location.get("Country Code")
+
+        coordinates = location.get("Geo Coordinates")
+        data["latitude"] = coordinates.get("Latitude")
+        data["longitude"] = coordinates.get("Longitude")
+
+        date_str = properties.get("Published")
+        data["date_tz"] = parse_datetime(date_str, "%Y-%m-%dT%H:%M:%SZ")
+        super().__init__(**data)
 
 
 class Location(BaseModel):
@@ -191,3 +221,24 @@ def process_locations(input_files=None):
 
                 for loc in content["locations"]:
                     yield Location(loc)
+
+
+def process_saved_locations(input_files=None):
+    if not input_files:
+        input_files = get_zip_file_paths(config.export_path)
+
+    # for each account file export
+    include_key = "Lugares salvos.json"
+    for zip_path in input_files:
+        zf = zipfile.ZipFile(zip_path)
+        location_files = [
+            i for i in zf.filelist
+            if MAPS_FOLDER_PREFIX in str(i) and include_key in str(i)
+        ]
+        # for each one of the found files
+        for file_name in location_files:
+            with zf.open(file_name) as f:
+                content = json.load(f)
+
+                for loc in content["features"]:
+                    yield Saved(loc)

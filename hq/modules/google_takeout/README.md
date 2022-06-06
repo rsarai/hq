@@ -5,8 +5,8 @@ This is google default export for all your data. Request your Google data from h
 - Youtube* (✅)
 - Search contributions
 - My activities* (✅)
-- Maps (My Locations)* (⌛)
-- Maps*  (⌛)
+- Maps (My Locations)* (✅)
+- Maps
 - Location History* (✅)
 - Google Play Store* (✅)
 - Contacts
