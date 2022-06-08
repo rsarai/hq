@@ -337,8 +337,11 @@ def process_bill_details(input_files=None):
 
     for bill_file in input_files:
         bill_data = json.loads(bill_file.read_bytes())
-        bill = bill_data["bill"]
+        bill = bill_data.get("bill")
+        if not bill:
+            continue
         yield BillDetails(bill)
+
 
 def process_future_bill_details():
     # TODO similar to process_bill_details

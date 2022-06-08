@@ -49,10 +49,15 @@ def generate_export():
         if bill["_links"] == {}:
             continue
 
-        # TODO in one of those links, we have a url that should be replaced with "future" to fetch open bills
+        status = bill.get("state")
+        self_link = bill.get("_links", {}).get("self", {}).get("href")
+        if status == "open" and self_link:
+            future_link = self_link.replace("open", "future")
+            response = nu._client.get(future_link)
+            dumper(response, Path(export_path + "/" + folder_name), f"future-bill-detail.json")
+
         due_date = bill["summary"]["due_date"]
         bill_detail = nu.get_bill_details(bill)
-
         dumper(bill_detail, Path(export_path + "/" + folder_name), f"{due_date}-bill-detail.json")
         # only getting the last one
         break
@@ -68,7 +73,6 @@ def generate_export():
 
     res = nu.get_account_investments_details()
     dumper(res, Path(export_path + "/" + folder_name), "account_investments_details.json")
-
 
 
 generate_export()

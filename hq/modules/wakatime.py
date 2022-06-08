@@ -3,7 +3,7 @@ import pytz
 
 from datetime import datetime
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 
 from hq.common import get_files, parse_datetime
 from hq.config import Wakatime as config
@@ -17,24 +17,26 @@ class WakaStat(BaseModel):
     raw: dict
     date_tz: Optional[datetime]
     timezone: Optional[str]
-    projects: Optional[dict]
-    machines: Optional[dict]
-    languages: Optional[dict]
+    projects: List[dict]
+    machines: List[dict]
+    languages: List[dict]
     grand_total: Optional[dict]
-    categories: Optional[dict]
+    categories: List[dict]
 
     def __init__(self, raw) -> None:
         data = {"raw": raw}
-        data["date_tz"] = parse_datetime("%Y-%m-%d", raw.get("range", {})("date"))
-        data["timezone"] = raw.get("range", {})("timezone")
 
-        data["projects"] = raw("projects")
-        data["machines"] = raw("machines")
-        data["languages"] = raw("languages")
-        data["grand_total"] = raw("grand_total")
-        data["categories"] = raw("categories")
-        data["total_time_text"] = raw("grand_total").get("text")
-        data["total_time_duration"] = raw("grand_total").get("digital")
+        date_str = raw.get("range", {}).get("date")
+        data["date_tz"] = parse_datetime(date_str, "%Y-%m-%d")
+        data["timezone"] = raw.get("range", {}).get("timezone")
+
+        data["projects"] = raw.get("projects")
+        data["machines"] = raw.get("machines")
+        data["languages"] = raw.get("languages")
+        data["grand_total"] = raw.get("grand_total")
+        data["categories"] = raw.get("categories")
+        data["total_time_text"] = raw.get("grand_total").get("text")
+        data["total_time_duration"] = raw.get("grand_total").get("digital")
         super().__init__(**data)
 
 
@@ -47,8 +49,8 @@ def process(input_files=None):
         with open(file, 'r') as json_file:
             content = json.load(json_file)
             for stats in content:
-                time_text = stats("grand_total", {}).get("text")
-                date_text = stats("range", {}).get("text")
+                time_text = stats.get("grand_total", {}).get("text")
+                date_text = stats.get("range", {}).get("text")
                 unique_set = f"{date_text} - {time_text}"
                 if time_text == "0 secs" or unique_set in handled:
                     continue

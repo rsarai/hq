@@ -254,5 +254,27 @@ def process_nubank_bills(data_iterable=None):
         data["timestamp_utc"] = str(event.close_date.astimezone(pytz.utc).timestamp()),
         data["datetime"] = event.close_date
         data["timezone"] = "America/Recife"
+        data["summary"] = f"Bill processed by Nubank with the value of R${event.total_balance}"
+        del data["raw"]
+        yield data
+
+
+def process_wakatime(data_iterable=None):
+    print("Processing wakatime stats")
+    if not data_iterable:
+        data_iterable = []
+
+    for event in data_iterable:
+        data = event.dict()
+        data["provider"] = "wakatime"
+        data["activity"] = "tracked"
+        data["principal_entity"] = "Rebeca Sarai"
+        data["activity_entities"] = []
+        data["timezone"] = "America/Recife"
+        data["timestamp_utc"] = str(event.date_tz.astimezone(pytz.utc).timestamp()),
+        data["datetime"] = event.date_tz
+
+        projects = ", ".join([p.name for p in event.projects])
+        data["summary"] = f"Tracked {event.grand_total.text} through wakatime working on {projects}"
         del data["raw"]
         yield data
