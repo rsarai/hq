@@ -151,21 +151,16 @@ def process_github_notifications(data_iterable=None):
         data_iterable = []
 
     for notification in data_iterable:
-        yield {
-            "provider": "github",
-            "activity": "received",
-            "principal_entity": "Rebeca Sarai",
-            "activity_entities": ["notification"],
-            "datetime": notification.updated_at,
-            "timestamp_utc": str(notification.updated_at.astimezone(pytz.utc).timestamp()),
-            "timezone": "America/Recife",
-            "device_name": "rsarai account",
-            "github_id": notification.github_id,
-            "reason": notification.reason,
-            "repository": notification.repository,
-            "url": notification.url,
-            "subject": notification.subject,
-        }
+        data = notification.dict()
+        data["provider"] = "github"
+        data["activity"] = "received"
+        data["principal_entity"] = "Rebeca Sarai"
+        data["activity_entities"] = ["notification"]
+        data["timestamp_utc"] = str(notification.updated_at.astimezone(pytz.utc).timestamp())
+        data["timezone"] = "America/Recife"
+        data["device_name"] = "rsarai account"
+        data["summary"] = notification.summary
+        yield data
 
 
 def process_github_events(data_iterable=None):
@@ -174,31 +169,17 @@ def process_github_events(data_iterable=None):
         data_iterable = []
 
     for event in data_iterable:
-        yield {
-            "provider": "github",
-            "activity": "triggered",
-            "principal_entity": "Rebeca Sarai",
-            "activity_entities": [event.type.lower()],
-            "datetime": event.created_at,
-            "timestamp_utc": str(event.created_at.astimezone(pytz.utc).timestamp()),
-            "timezone": "America/Recife",
-            "device_name": "rsarai's account",
-            "github_id": event.github_id,
-            "type": event.type,
-            "public": event.public,
-            "actor": event.actor,
-            "org": event.org,
-            "repository": event.repo,
-            "created_at": event.created_at,
-            "create_data": event.create_data,
-            "delete_data": event.delete_data,
-            "issue_comment_data": event.issue_comment_data,
-            "pull_request_data": event.pull_request_data,
-            "pull_request_review_comment_data": event.pull_request_review_comment_data,
-            "pull_request_review_event_data": event.pull_request_review_event_data,
-            "push_data": event.push_data,
-            "watch_data": event.watch_data,
-        }
+        data = event.dict()
+        data["provider"] = "github"
+        data["activity"] = "triggered"
+        data["principal_entity"] = "Rebeca Sarai"
+        data["activity_entities"] = [event.type.lower()]
+        data["datetime"] = event.created_at
+        data["timestamp_utc"] = str(event.created_at.astimezone(pytz.utc).timestamp())
+        data["timezone"] = "America/Recife"
+        data["device_name"] = "rsarai's account"
+        data["summary"] = event.summary
+        yield data
 
 
 def process_nubank_card_feed(data_iterable=None):
@@ -216,6 +197,7 @@ def process_nubank_card_feed(data_iterable=None):
         data["timestamp_utc"] = str(event.date_tz.astimezone(pytz.utc).timestamp()),
         data["datetime"] = event.date_tz
         data["timezone"] = "America/Recife"
+        data["summary"] = f"Transaction on nubank card feed: {event.description} {event.detail} R${event.amount}"
         del data["raw"]
         yield data
 
@@ -235,6 +217,8 @@ def process_nubank_account_feed(data_iterable=None):
         data["timestamp_utc"] = str(event.date_tz.astimezone(pytz.utc).timestamp()),
         data["datetime"] = event.date_tz
         data["timezone"] = "America/Recife"
+        event.detail
+        data["summary"] = f"Nubank generic feed event: {event.title} {event.detail}"
         del data["raw"]
         yield data
 

@@ -30,6 +30,7 @@ class Notification(BaseModel):
     updated_at_str: Optional[str]
     updated_at: Optional[datetime]
     subject: Optional[dict]
+    summary: Optional[str]
 
     def __init__(self, raw, details) -> None:
         data = {"raw": raw}
@@ -61,6 +62,9 @@ class Notification(BaseModel):
         else:
             data["subject"] = raw["subject"]
 
+        data["summary"] = "Received {} with subject \"{}\" on repo {}".format(
+            raw["reason"], data["subject"], data["repository"].get("name", "")
+        )
         super().__init__(**data)
 
 
@@ -79,8 +83,11 @@ class Event(BaseModel):
     pull_request_data: Optional[dict]
     pull_request_review_comment_data: Optional[dict]
     pull_request_review_event_data: Optional[dict]
+    fork_data: Optional[dict]
     push_data: Optional[dict]
     watch_data: Optional[dict]
+    member_data: Optional[dict]
+    summary: Optional[str]
 
     def __init__(self, raw) -> None:
         data = {"raw": raw}
@@ -106,13 +113,25 @@ class Event(BaseModel):
                 "master_branch": raw["payload"]["master_branch"],
                 "description": raw["payload"]["description"],
             }
+            data["summary"] = "{} created {} {} on repository {} ".format(
+                data["actor"],
+                raw["payload"].get("ref_type", ""),
+                raw["payload"].get("ref", ""),
+                data["repo"]["name"]
+            )
         elif data["type"] == "DeleteEvent":
             data["delete_data"] = {
                 "ref": raw["payload"]["ref"],
                 "ref_type": raw["payload"]["ref_type"],
                 "pusher_type": raw["payload"]["pusher_type"],
             }
-        elif data["type"] == "IssueCommentEvent":
+            data["summary"] = "{} deleted {} {} on repository {} ".format(
+                data["actor"],
+                raw["payload"].get("ref_type", ""),
+                raw["payload"].get("ref", ""),
+                data["repo"]["name"]
+            )
+        elif data["type"] == "IssueCommentEvent" or data["type"] == "IssuesEvent":
             created_at = raw["payload"]["issue"]["created_at"]
             if created_at:
                 created_at = parse_datetime(created_at, '%Y-%m-%dT%H:%M:%S%z')
@@ -131,6 +150,7 @@ class Event(BaseModel):
                 "issue": {
                     "number": raw["payload"]["issue"]["number"],
                     "title": raw["payload"]["issue"]["title"],
+                    "url": raw["payload"]["issue"]["html_url"],
                     "user": raw["payload"]["issue"]["user"]["login"],
                     "labels": raw["payload"]["issue"]["labels"],
                     "state": raw["payload"]["issue"]["state"],
@@ -145,8 +165,14 @@ class Event(BaseModel):
                     "closed_at": closed_at,
                     "author_association": raw["payload"]["issue"]["author_association"],
                     "body": raw["payload"]["issue"]["body"],
+                    "comment": raw["payload"].get("comment", {}).get("body")
                 }
             }
+            data["summary"] = "{} commented \"{}\" on the repository {}".format(
+                data["actor"],
+                raw["payload"].get("comment", {}).get("body", ""),
+                data["repo"]["name"]
+            )
         elif data["type"] == "PullRequestEvent":
             created_at = raw["payload"]["pull_request"]["created_at"]
             if created_at:
@@ -207,6 +233,12 @@ class Event(BaseModel):
                 "deletions": raw["payload"]["pull_request"]["deletions"],
                 "changed_files": raw["payload"]["pull_request"]["changed_files"],
             }
+            data["summary"] = "{} {} a PR {} on the repository {}".format(
+                data["actor"],
+                raw["payload"]["action"],
+                raw["payload"]["pull_request"]["title"],
+                data["repo"]["name"]
+            )
         elif data["type"] == "PullRequestReviewCommentEvent":
             created_at = raw["payload"].get("comment", {}).get("created_at")
             if created_at:
@@ -270,6 +302,8 @@ class Event(BaseModel):
                     for user in raw["payload"]["pull_request"]["requested_teams"] if user
                 ],
                 "labels": raw["payload"]["pull_request"]["labels"],
+                "comment": raw["payload"].get("comment", {}).get("body", ""),
+                "url": raw["payload"].get("comment", {}).get("html_url", ""),
                 "draft": raw["payload"]["pull_request"]["draft"],
                 "head_ref": raw["payload"]["pull_request"].get("head", {}).get("label"),
                 "head_sha": raw["payload"]["pull_request"].get("head", {}).get("sha"),
@@ -277,6 +311,11 @@ class Event(BaseModel):
                 "base_sha": raw["payload"]["pull_request"].get("base", {}).get("sha"),
                 "author_association": raw["payload"]["pull_request"]["author_association"],
             }
+            data["summary"] = "{} left a comment on PR #{} on the repository {}".format(
+                data["actor"],
+                raw["payload"]["pull_request"]["number"],
+                data["repo"]["name"]
+            )
         elif data["type"] == "PullRequestReviewEvent":
             submitted_at = raw["payload"].get("review", {}).get("submitted_at")
             if submitted_at:
@@ -341,6 +380,12 @@ class Event(BaseModel):
                     "author_association": raw["payload"]["pull_request"]["author_association"],
                 }
             }
+            data["summary"] = "{} marked PR #{} as {} on the repository {}".format(
+                data["actor"],
+                raw["payload"]["pull_request"]["number"],
+                raw["payload"]["pull_request"]["state"],
+                data["repo"]["name"]
+            )
         elif data["type"] == "PushEvent":
             data["push_data"] = {
                 "ref": raw.get("payload", {}).get("ref"),
@@ -349,12 +394,38 @@ class Event(BaseModel):
                     for commit in raw.get("payload", {}).get("commits", []) if commit
                 ],
             }
+            data["summary"] = "{} pushed to {} on the repository {}".format(
+                data["actor"],
+                raw.get("payload", {}).get("ref"),
+                data["repo"]["name"]
+            )
         elif data["type"] == "WatchEvent":
             data["watch_data"] = {
                 "action": raw.get("payload", {}).get("action"),
             }
+            data["summary"] = "{} started to watch {} on github".format(data["actor"], data["repo"]["name"])
+        elif data["type"] == "ForkEvent":
+            forkee = raw.get("payload", {}).get("forkee")
+            data["fork_data"] = {
+                "name": forkee.get("name"),
+                "full_name": forkee.get("full_name"),
+                "url": forkee.get("html_url")
+            }
+            data["summary"] = "{} forked {} on github".format(data["actor"], data["repo"]["name"])
+        elif data["type"] == "MemberEvent":
+            member = raw.get("payload", {}).get("member")
+            data["member_data"] = {
+                "action": raw.get("payload", {}).get("action"),
+                "login": member.get("login"),
+                "url": member.get("html_url"),
+            }
+            data["summary"] = "{} {} {} to {}".format(
+                data["actor"], raw.get("payload", {}).get("action"), member.get("login"), data["repo"]["name"]
+            )
+        elif data["type"] == "PublicEvent":
+            data["summary"] = "{} triggered a public event on {}".format(data["actor"], data["repo"]["name"])
         else:
-            print("New event, you need to change the processing module and the importers")
+            print("New event, you need to change the processing module and the importers", data["type"])
 
         super().__init__(**data)
 

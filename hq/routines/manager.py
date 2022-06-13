@@ -22,7 +22,7 @@ class ImportManager:
     has_google_takeout_my_activity: bool = False
     has_google_takeout_play_store: bool = False
     has_google_takeout_youtube: bool = False
-    has_wakatime: bool = False
+    has_wakatime: bool = True
     state_file: str = '.db.json'
     working_files = []
 
