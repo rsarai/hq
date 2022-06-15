@@ -5,7 +5,10 @@ from typing import List
 from dataclasses import dataclass
 
 from hq.api import handler
-from hq.modules import bash, habits, daylio, chrome, toggl, github, rescuetime, nubank, wakatime
+from hq.modules import (
+    bash, habits, daylio, chrome, toggl, github, rescuetime, nubank, wakatime,
+    google_takeout
+)
 
 @dataclass
 class ImportManager:
@@ -17,14 +20,14 @@ class ImportManager:
     has_toggl: bool = True
     has_rescuetime: bool = True
     has_nubank: bool = True
-    has_google_takeout_calendar: bool = False
-    has_google_takeout_maps: bool = False
-    has_google_takeout_my_activity: bool = False
+    has_google_takeout_calendar: bool = True
+    has_google_takeout_maps_semantic: bool = True
+    has_google_takeout_my_activity: bool = True
     has_google_takeout_play_store: bool = False
     has_google_takeout_youtube: bool = False
     has_wakatime: bool = True
     state_file: str = '.db.json'
-    working_files = []
+    working_files: List = []
 
     def available_importers(self):
         return f"""
@@ -37,7 +40,7 @@ class ImportManager:
             rescuetime = {self.has_rescuetime}
             nubank = {self.has_nubank}
             google takeout calendar = {self.has_google_takeout_calendar}
-            google takeout maps = {self.has_google_takeout_maps}
+            google takeout maps = {self.has_google_takeout_maps_semantic}
             google takeout myactivity = {self.has_google_takeout_my_activity}
             google takeout playstore = {self.has_google_takeout_play_store}
             google takeout youtube = {self.has_google_takeout_youtube}
@@ -49,6 +52,8 @@ class ImportManager:
         all_toggl_files = all_rc_summary_files = all_rc_analytics_files = []
         all_gh_events_files = all_gh_notification_files = all_nubank_card_files = []
         all_nubank_account_files = all_nubank_bills_files = all_wakatime_files = []
+        all_google_takeout_calendar = all_google_takeout_maps_files = []
+        all_google_takeout_my_activity_files = []
 
         if self.has_bash:
             all_bash_files = bash.get_file_paths()
@@ -111,6 +116,29 @@ class ImportManager:
             wakatime_data_generator = wakatime.process(all_wakatime_files)
             yield from handler.process_wakatime(wakatime_data_generator)
 
+        if self.has_google_takeout_calendar:
+            all_google_takeout_calendar = google_takeout.calendar.get_file_paths()
+            google_takeout_calendar_generator = google_takeout.calendar.process_my_calendars(
+                all_google_takeout_calendar
+            )
+            yield from handler.process_google_takeout_calendar(google_takeout_calendar_generator)
+
+        if self.has_google_takeout_maps_semantic:
+            all_google_takeout_maps_files = google_takeout.maps.get_file_paths()
+            google_takeout_maps_generator = google_takeout.maps.process_semantic_locations(
+                all_google_takeout_maps_files
+            )
+            yield from handler.process_google_takeout_maps_semantic_locations(
+                google_takeout_maps_generator
+            )
+
+        if self.has_google_takeout_my_activity:
+            all_google_takeout_my_activity_files = google_takeout.my_activity.get_my_activities_file_paths()
+            gt_activity_generator = google_takeout.my_activity.process_my_activities(
+                all_google_takeout_my_activity_files
+            )
+            yield from handler.process_google_takeout_my_activity(gt_activity_generator)
+
         self.working_files.extend([
             all_bash_files,
             all_habits_files,
@@ -125,6 +153,9 @@ class ImportManager:
             all_nubank_account_files,
             all_nubank_bills_files,
             all_wakatime_files,
+            all_google_takeout_calendar,
+            all_google_takeout_maps_files,
+            all_google_takeout_my_activity_files,
         ])
 
     def mark_import_as_completed(self):
@@ -149,7 +180,8 @@ class ImportManager:
         all_browser_files = all_toggl_files = all_rc_summary_files = []
         all_rc_analytics_files = all_gh_events_files = all_gh_notification_files = []
         all_nubank_card_files = all_nubank_account_files = []
-        all_nubank_bills_files = all_wakatime_files = []
+        all_nubank_bills_files = all_wakatime_files = all_google_takeout_calendar = []
+        all_google_takeout_maps_files = all_google_takeout_my_activity_files = []
 
         if self.has_bash:
             all_bash_files = [str(i) for i in bash.get_file_paths()]
@@ -225,6 +257,32 @@ class ImportManager:
             wakatime_data_generator = wakatime.process(all_wakatime_files)
             yield from handler.process_wakatime(wakatime_data_generator)
 
+        if self.has_google_takeout_calendar:
+            all_google_takeout_calendar = [str(i) for i in google_takeout.calendar.get_file_paths()]
+            all_google_takeout_calendar = set(all_google_takeout_calendar) - set(processed_files)
+            google_takeout_calendar_generator = google_takeout.calendar.process_my_calendars(
+                all_google_takeout_calendar
+            )
+            yield from handler.process_google_takeout_calendar(google_takeout_calendar_generator)
+
+        if self.has_google_takeout_maps_semantic:
+            all_google_takeout_maps_files = [str(i) for i in google_takeout.maps.get_file_paths()]
+            all_google_takeout_maps_files = set(all_google_takeout_maps_files) - set(processed_files)
+            google_takeout_maps_generator = google_takeout.maps.process_semantic_locations(
+                all_google_takeout_maps_files
+            )
+            yield from handler.process_google_takeout_maps_semantic_locations(
+                google_takeout_maps_generator
+            )
+
+        if self.has_google_takeout_my_activity:
+            all_google_takeout_my_activity_files = [str(i) for i in google_takeout.my_activity.get_my_activities_file_paths()]
+            all_google_takeout_my_activity_files = set(all_google_takeout_my_activity_files) - set(processed_files)
+            gt_activity_generator = google_takeout.my_activity.process_my_activities(
+                all_google_takeout_my_activity_files
+            )
+            yield from handler.process_google_takeout_my_activity(gt_activity_generator)
+
         self.working_files.extend([
             all_bash_files,
             all_habits_files,
@@ -239,4 +297,7 @@ class ImportManager:
             all_nubank_account_files,
             all_nubank_bills_files,
             all_wakatime_files,
+            all_google_takeout_calendar,
+            all_google_takeout_maps_files,
+            all_google_takeout_my_activity_files,
         ])

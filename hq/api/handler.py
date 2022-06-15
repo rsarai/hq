@@ -11,18 +11,19 @@ def process_bash(data_iterable=None):
             continue
 
         timestamp_utc = str(cmd.date_tz.astimezone(pytz.utc).timestamp()) if cmd.date_tz else None
-        yield {
-            "provider": "bash",
-            "activity": "commanded",
-            "principal_entity": "Rebeca Sarai",
-            "activity_entities": [],
-            "datetime": cmd.date_tz,
-            "timestamp_utc": timestamp_utc,
-            "timezone": "America/Recife",
-            "command": cmd.cmd,
-            "folder": cmd.folder,
-            "device_name": cmd.host,
-        }
+        data = cmd.dict()
+        data["provider"] = "bash"
+        data["activity"] = "commanded"
+        data["principal_entity"] = "Rebeca Sarai"
+        data["activity_entities"] = []
+        data["timezone"] = "America/Recife"
+        data["datetime"] = cmd.date_tz
+        data["timestamp_utc"] = timestamp_utc
+        data["command"] = cmd.cmd
+        data["folder"] = cmd.folder
+        data["device_name"] = cmd.host
+        del data["date_tz"]
+        yield data
 
 
 def process_habits(data_iterable=None):
@@ -31,17 +32,18 @@ def process_habits(data_iterable=None):
         data_iterable = []
 
     for habit in data_iterable:
-        yield {
-            "provider": "habits",
-            "activity": "marked",
-            "principal_entity": "Rebeca Sarai",
-            "activity_entities": [habit.name.lower()],
-            "datetime": habit.date_tz,
-            "timestamp_utc": str(habit.date_tz.astimezone(pytz.utc).timestamp()),
-            "timezone": "America/Recife",
-            "device_name": "Galaxy S10",
-            "detail": habit.description,
-        }
+        data = habit.dict()
+        data["provider"] = "habits"
+        data["activity"] = "marked"
+        data["principal_entity"] = "Rebeca Sarai"
+        data["activity_entities"] = [habit.name.lower()]
+        data["timezone"] = "America/Recife"
+        data["device_name"] = "Galaxy S10"
+        data["datetime"] = habit.date_tz
+        data["timestamp_utc"] = str(habit.date_tz.astimezone(pytz.utc).timestamp())
+        data["detail"] = habit.description
+        data["summary"] = f"Marked YES to \"{habit.description}\" on habits"
+        yield data
 
 
 def process_moods(data_iterable=None):
@@ -51,15 +53,16 @@ def process_moods(data_iterable=None):
 
     for mood in data_iterable:
         data = mood.dict()
+        data["provider"] = "daylio"
+        data["activity"] = "rated"
+        data["principal_entity"] = "Rebeca Sarai"
+        data["activity_entities"] = ["day"]
+        data["datetime"] = mood.date_tz
+        data["timestamp_utc"] = str(mood.date_tz.astimezone(pytz.utc).timestamp())
+        data["timezone"] = "America/Recife"
+        data["device_name"] = "Galaxy S10"
+        data["summary"] = f"Rated the day as {mood} on daylio"
         del data["date_tz"]
-        data["provider"] = "daylio",
-        data["activity"] = "rated",
-        data["principal_entity"] = "Rebeca Sarai",
-        data["activity_entities"] = ["day"],
-        data["datetime"] = mood.date_tz,
-        data["timestamp_utc"] = str(mood.date_tz.astimezone(pytz.utc).timestamp()),
-        data["timezone"] = "America/Recife",
-        data["device_name"] = "Galaxy S10",
         yield data
 
 
@@ -70,10 +73,6 @@ def process_google_chrome(data_iterable=None):
 
     for link in data_iterable:
         data = link.dict()
-        del data["raw"]
-        del data["title"]
-        del data["url"]
-        del data["date_tz"]
         data["provider"] = "google chrome"
         data["activity"] = "accessed"
         data["principal_entity"] = "Rebeca Sarai"
@@ -84,6 +83,11 @@ def process_google_chrome(data_iterable=None):
         data["device_name"] = "Avell G1711: rsarai"
         data["website_title"] = link.title
         data["website_url"] = link.url
+        data["summary"] = f"Accessed \"{link.title}\" on google chrome"
+        del data["raw"]
+        del data["title"]
+        del data["url"]
+        del data["date_tz"]
         yield data
 
 
@@ -104,6 +108,11 @@ def process_toggl(data_iterable=None):
         data["timestamp_utc"] = str(entry.at.astimezone(pytz.utc).timestamp())
         data["timezone"] = "America/Recife"
         data["device_name"] = "Web App"
+        data["summary"] = "Clocked {} doing {} on project \"{}\"".format(
+            entry.human_time_duration,
+            entry.description,
+            entry.project_name
+        )
         yield data
 
 
@@ -123,6 +132,10 @@ def process_rescue_time_summary(data_iterable=None):
         data["timestamp_utc"] = str(summary.date_tz.astimezone(pytz.utc).timestamp())
         data["timezone"] = "America/Recife"
         data["device_name"] = "Web App"
+        data["summary"] = "Clocked {} and out of that {} were very productive".format(
+            summary.total_duration_formatted,
+            summary.very_productive_duration_formatted
+        )
         yield data
 
 
@@ -133,7 +146,6 @@ def process_rescue_time_analytics(data_iterable=None):
 
     for entry in data_iterable:
         data = entry.dict()
-        del data["raw"]
         data["provider"] = "rescuetime"
         data["activity"] = "tracked"
         data["principal_entity"] = "Rebeca Sarai"
@@ -142,6 +154,8 @@ def process_rescue_time_analytics(data_iterable=None):
         data["timestamp_utc"] = str(entry.date_tz.astimezone(pytz.utc).timestamp())
         data["timezone"] = "America/Recife"
         data["device_name"] = "Web App"
+        data["summary"] = f"Entry on rescue time. {entry.time_spent_in_seconds} seconds spent on {entry.detail}"
+        del data["raw"]
         yield data
 
 
@@ -262,3 +276,58 @@ def process_wakatime(data_iterable=None):
         data["summary"] = f"Tracked {event.grand_total.text} through wakatime working on {projects}"
         del data["raw"]
         yield data
+
+
+def process_google_takeout_calendar(data_iterable=None):
+    print("Processing google takeout calendar stats")
+    if not data_iterable:
+        data_iterable = []
+
+    for calendar in data_iterable:
+        data = calendar.dict()
+        data["provider"] = "google takeout calendar"
+        data["activity"] = "participated"
+        data["principal_entity"] = "Rebeca Sarai"
+        data["activity_entities"] = ["meeting"]
+        data["timezone"] = "America/Recife"
+        data["timestamp_utc"] = str(calendar.begin.astimezone(pytz.utc).timestamp()),
+        data["datetime"] = calendar.begin
+        data["summary"] = f"Participated in the a \"{calendar.name}\" meeting"
+        del data["raw"]
+        yield data
+
+
+def process_google_takeout_maps_semantic_locations(data_iterable=None):
+    print("Processing google takeout maps stats")
+    if not data_iterable:
+        data_iterable = []
+
+    for entry in data_iterable:
+        data = entry.dict()
+        data["provider"] = "google takeout maps"
+        data["activity"] = "visited"
+        data["principal_entity"] = "Rebeca Sarai"
+        data["activity_entities"] = ["location"]
+        data["timestamp_utc"] = str(entry.date_tz.astimezone(pytz.utc).timestamp()),
+        data["datetime"] = entry.date_tz
+        data["latitude"] = entry.latitudeE7 / 10_000_000
+        data["longitude"] = entry.longitudeE7  / 10_000_000
+        data["summary"] = f"Stayed on \"{entry.name}\" (full address: {entry.address})"
+        del data["raw"]
+
+
+def process_google_takeout_my_activity(data_iterable=None):
+    print("Processing google takeout maps stats")
+    if not data_iterable:
+        data_iterable = []
+
+    for entry in data_iterable:
+        data = entry.dict()
+        data["provider"] = "google takeout my activity"
+        data["activity"] = "engaged"
+        data["principal_entity"] = "Rebeca Sarai"
+        data["activity_entities"] = ["activity"]
+        data["timestamp_utc"] = str(entry.date_tz.astimezone(pytz.utc).timestamp()),
+        data["datetime"] = entry.date_tz
+        data["summary"] = f"Engaged with {entry.title} and {entry.content}"
+        del data["raw"]
