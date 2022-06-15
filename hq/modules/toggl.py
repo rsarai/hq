@@ -12,6 +12,26 @@ from hq.config import Toggl as config
 timezone = pytz.timezone("America/Recife")
 
 
+TIME_DURATION_UNITS = (
+    ('week', 60*60*24*7),
+    ('day', 60*60*24),
+    ('hour', 60*60),
+    ('min', 60),
+    ('sec', 1)
+)
+
+
+def human_time_duration(seconds):
+    if seconds == 0:
+        return 'inf'
+    parts = []
+    for unit, div in TIME_DURATION_UNITS:
+        amount, seconds = divmod(int(seconds), div)
+        if amount > 0:
+            parts.append('{} {}{}'.format(amount, unit, "" if amount == 1 else "s"))
+    return ', '.join(parts)
+
+
 def get_file_paths():
     return get_files(config.export_path, "*.json")
 
@@ -31,6 +51,7 @@ class TimeEntry(BaseModel):
     start: Optional[datetime]
     stop: Optional[datetime]
     duration: Optional[int]
+    human_time_duration: Optional[str]
     description: Optional[str]
     duronly: Optional[bool]
     tags: Optional[list]
@@ -50,6 +71,7 @@ class TimeEntry(BaseModel):
         data["stop"] = parse_datetime(stop, '%Y-%m-%dT%H:%M:%S%z')
 
         data["duration"] = raw["duration"]
+        data["human_time_duration"] = human_time_duration(raw["duration"])
         data["description"] = raw.get("description")
         data["duronly"] = raw["duronly"]
         data["tags"] = raw.get("tags")

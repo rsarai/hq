@@ -16,9 +16,9 @@ timezone = pytz.timezone("America/Recife")
 
 def get_file_paths():
     files = []
-    files.append(max(get_files(config.export_path, "vinta*")))
-    files.append(max(get_files(config.export_path, "ecomp*")))
-    files.append(max(get_files(config.export_path, "takeout*")))
+    files.append(max(get_files(config.export_path, "vinta*.zip")))
+    files.append(max(get_files(config.export_path, "ecomp*.zip")))
+    files.append(max(get_files(config.export_path, "takeout*.zip")))
     return files
 
 

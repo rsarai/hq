@@ -23,8 +23,16 @@ def get_file_paths():
 
 
 def get_my_activities_file_paths():
+    files = get_files(config.export_path, "takeout*.json")
+    files = [
+        i
+        for i in files
+        if "histórico-de-visualização" not in str(i) and "histórico de pesquisa" not in str(i)
+    ]
     return [
-        max(get_files(config.export_path, "*.json")),
+        max(files),
+        max(get_files(config.export_path, "vinta*.json")),
+        max(get_files(config.export_path, "ecomp*.json")),
     ]
 
 
