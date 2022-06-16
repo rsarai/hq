@@ -22,6 +22,7 @@ def process_bash(data_iterable=None):
         data["command"] = cmd.cmd
         data["folder"] = cmd.folder
         data["device_name"] = cmd.host
+        data["summary"] = f"Used command \"{cmd.cmd}\" on host: {cmd.host}"
         del data["date_tz"]
         yield data
 
@@ -317,7 +318,7 @@ def process_google_takeout_maps_semantic_locations(data_iterable=None):
 
 
 def process_google_takeout_my_activity(data_iterable=None):
-    print("Processing google takeout maps stats")
+    print("Processing google takeout my activity stats")
     if not data_iterable:
         data_iterable = []
 
@@ -331,3 +332,20 @@ def process_google_takeout_my_activity(data_iterable=None):
         data["datetime"] = entry.date_tz
         data["summary"] = f"Engaged with {entry.title} and {entry.content}"
         del data["raw"]
+
+
+def process_google_takeout_play_store(data_iterable=None):
+    print("Processing google takeout play store stats")
+    if not data_iterable:
+        data_iterable = []
+
+    for entry in data_iterable:
+        data = entry.dict()
+        data["provider"] = "play store"
+        data["activity"] = "engaged"
+        data["principal_entity"] = "Rebeca Sarai"
+        data["activity_entities"] = ["play store"]
+        data["timestamp_utc"] = str(entry.date_tz.astimezone(pytz.utc).timestamp()),
+        data["datetime"] = entry.date_tz
+        data["summary"] = f"Interacted with {entry.description} \"{entry.title}\""
+        del data["date_tz"]
