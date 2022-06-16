@@ -68,7 +68,7 @@ class Review(BaseModel):
         data["date_tz"] = parse_datetime(date, '%Y-%m-%dT%H:%M:%S.%fZ')
 
         data["rating"] = review.get("starRating")
-        data["comment"] = review.get("title") + " " + review.get("comment")
+        data["comment"] = review.get("title", "") + " " + review.get("comment", "")
         super().__init__(**data)
 
 
@@ -121,7 +121,7 @@ class Subscription(BaseModel):
     period: Optional[str]
     title: Optional[str]
     pricing: Optional[list]
-    action_record: Optional[dict]
+    action_record: Optional[list]
     state: Optional[str]
     expiration_date: Optional[datetime]
     description: str = 'Google Play Store: Subscription'
@@ -144,10 +144,14 @@ class Subscription(BaseModel):
         super().__init__(**data)
 
 
+def get_file_paths():
+    return get_zip_file_paths(config.export_path)
+
+
 def process(input_files=None):
     CLASSES_FILES = [Purchase, Subscription, Review, Order, Install]
     if not input_files:
-        input_files = get_zip_file_paths(config.export_path)
+        input_files = get_file_paths()
 
     # for each account file export
     for zip_path in input_files:

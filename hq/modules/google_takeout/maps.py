@@ -175,9 +175,13 @@ class ActivitySegment(BaseModel):
         super().__init__(**data)
 
 
+def get_file_paths():
+    return get_zip_file_paths(config.export_path)
+
+
 def process_semantic_locations(input_files=None):
     if not input_files:
-        input_files = get_zip_file_paths(config.export_path)
+        input_files = get_file_paths()
     print("input files", len(input_files))
 
     for zip_path in input_files:
@@ -203,7 +207,7 @@ def process_semantic_locations(input_files=None):
 
 def process_locations(input_files=None):
     if not input_files:
-        input_files = get_zip_file_paths(config.export_path)
+        input_files = get_file_paths()
 
     # for each account file export
     include_key = "Records.json"
@@ -225,7 +229,7 @@ def process_locations(input_files=None):
 
 def process_saved_locations(input_files=None):
     if not input_files:
-        input_files = get_zip_file_paths(config.export_path)
+        input_files = get_file_paths()
 
     # for each account file export
     include_key = "Lugares salvos.json"
