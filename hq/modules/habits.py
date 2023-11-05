@@ -55,9 +55,9 @@ ON r.habit = h.id;
 
 class Habit(BaseModel):
     raw: list
-    date_tz: Optional[datetime]
-    description: Optional[str]
-    name: Optional[str]
+    date_tz: Optional[datetime] = None
+    description: Optional[str] = None
+    name: Optional[str] = None
 
     def __init__(self, raw):
         data = {"raw": raw}

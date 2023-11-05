@@ -24,64 +24,64 @@ def get_analytic_data_file_paths():
 
 class Report(BaseModel):
     raw: dict
-    date_tz: Optional[datetime]
-    productivity_pulse: Optional[int]
-    very_productive_percentage: Optional[float]
-    productive_percentage: Optional[float]
-    neutral_percentage: Optional[float]
-    distracting_percentage: Optional[float]
-    very_distracting_percentage: Optional[float]
-    all_productive_percentage: Optional[float]
-    all_distracting_percentage: Optional[float]
-    uncategorized_percentage: Optional[float]
-    business_percentage: Optional[float]
-    communication_and_scheduling_percentage: Optional[float]
-    social_networking_percentage: Optional[float]
-    design_and_composition_percentage: Optional[float]
-    entertainment_percentage: Optional[float]
-    news_percentage: Optional[float]
-    software_development_percentage: Optional[float]
-    reference_and_learning_percentage: Optional[float]
-    shopping_percentage: Optional[float]
-    utilities_percentage: Optional[float]
-    total_hours: Optional[float]
-    very_productive_hours: Optional[float]
-    productive_hours: Optional[float]
-    neutral_hours: Optional[float]
-    distracting_hours: Optional[float]
-    very_distracting_hours: Optional[float]
-    all_productive_hours: Optional[float]
-    all_distracting_hours: Optional[float]
-    uncategorized_hours: Optional[float]
-    business_hours: Optional[float]
-    communication_and_scheduling_hours: Optional[float]
-    social_networking_hours: Optional[float]
-    design_and_composition_hours: Optional[float]
-    entertainment_hours: Optional[float]
-    news_hours: Optional[float]
-    software_development_hours: Optional[float]
-    reference_and_learning_hours: Optional[float]
-    shopping_hours: Optional[float]
-    utilities_hours: Optional[float]
-    total_duration_formatted: Optional[str]
-    very_productive_duration_formatted: Optional[str]
-    productive_duration_formatted: Optional[str]
-    neutral_duration_formatted: Optional[str]
-    distracting_duration_formatted: Optional[str]
-    very_distracting_duration_formatted: Optional[str]
-    all_productive_duration_formatted: Optional[str]
-    all_distracting_duration_formatted: Optional[str]
-    uncategorized_duration_formatted: Optional[str]
-    business_duration_formatted: Optional[str]
-    communication_and_scheduling_duration_formatted: Optional[str]
-    social_networking_duration_formatted: Optional[str]
-    design_and_composition_duration_formatted: Optional[str]
-    entertainment_duration_formatted: Optional[str]
-    news_duration_formatted: Optional[str]
-    software_development_duration_formatted: Optional[str]
-    reference_and_learning_duration_formatted: Optional[str]
-    shopping_duration_formatted: Optional[str]
-    utilities_duration_formatted: Optional[str]
+    date_tz: Optional[datetime] = None
+    productivity_pulse: Optional[int] = None
+    very_productive_percentage: Optional[float] = None
+    productive_percentage: Optional[float] = None
+    neutral_percentage: Optional[float] = None
+    distracting_percentage: Optional[float] = None
+    very_distracting_percentage: Optional[float] = None
+    all_productive_percentage: Optional[float] = None
+    all_distracting_percentage: Optional[float] = None
+    uncategorized_percentage: Optional[float] = None
+    business_percentage: Optional[float] = None
+    communication_and_scheduling_percentage: Optional[float] = None
+    social_networking_percentage: Optional[float] = None
+    design_and_composition_percentage: Optional[float] = None
+    entertainment_percentage: Optional[float] = None
+    news_percentage: Optional[float] = None
+    software_development_percentage: Optional[float] = None
+    reference_and_learning_percentage: Optional[float] = None
+    shopping_percentage: Optional[float] = None
+    utilities_percentage: Optional[float] = None
+    total_hours: Optional[float] = None
+    very_productive_hours: Optional[float] = None
+    productive_hours: Optional[float] = None
+    neutral_hours: Optional[float] = None
+    distracting_hours: Optional[float] = None
+    very_distracting_hours: Optional[float] = None
+    all_productive_hours: Optional[float] = None
+    all_distracting_hours: Optional[float] = None
+    uncategorized_hours: Optional[float] = None
+    business_hours: Optional[float] = None
+    communication_and_scheduling_hours: Optional[float] = None
+    social_networking_hours: Optional[float] = None
+    design_and_composition_hours: Optional[float] = None
+    entertainment_hours: Optional[float] = None
+    news_hours: Optional[float] = None
+    software_development_hours: Optional[float] = None
+    reference_and_learning_hours: Optional[float] = None
+    shopping_hours: Optional[float] = None
+    utilities_hours: Optional[float] = None
+    total_duration_formatted: Optional[str] = None
+    very_productive_duration_formatted: Optional[str] = None
+    productive_duration_formatted: Optional[str] = None
+    neutral_duration_formatted: Optional[str] = None
+    distracting_duration_formatted: Optional[str] = None
+    very_distracting_duration_formatted: Optional[str] = None
+    all_productive_duration_formatted: Optional[str] = None
+    all_distracting_duration_formatted: Optional[str] = None
+    uncategorized_duration_formatted: Optional[str] = None
+    business_duration_formatted: Optional[str] = None
+    communication_and_scheduling_duration_formatted: Optional[str] = None
+    social_networking_duration_formatted: Optional[str] = None
+    design_and_composition_duration_formatted: Optional[str] = None
+    entertainment_duration_formatted: Optional[str] = None
+    news_duration_formatted: Optional[str] = None
+    software_development_duration_formatted: Optional[str] = None
+    reference_and_learning_duration_formatted: Optional[str] = None
+    shopping_duration_formatted: Optional[str] = None
+    utilities_duration_formatted: Optional[str] = None
 
     def __init__(self, raw) -> None:
         data = {"raw": raw}
@@ -153,12 +153,12 @@ class Report(BaseModel):
 
 class Entry(BaseModel):
     raw: list
-    date_tz: Optional[datetime]
-    time_spent_in_seconds: Optional[int]
-    number_of_people: Optional[int]
-    detail: Optional[str]
-    category: Optional[str]
-    productivity: Optional[int]
+    date_tz: Optional[datetime] = None
+    time_spent_in_seconds: Optional[int] = None
+    number_of_people: Optional[int] = None
+    detail: Optional[str] = None
+    category: Optional[str] = None
+    productivity: Optional[int] = None
 
     def __init__(self, raw) -> None:
         data = {"raw": raw}

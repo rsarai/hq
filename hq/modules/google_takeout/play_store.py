@@ -24,13 +24,13 @@ INCLUDE_FILES = [
 
 class Order(BaseModel):
     raw: dict
-    id: Optional[str]
-    date_tz: Optional[datetime]
-    price: Optional[str]
-    tax: Optional[str]
-    refund: Optional[str]
-    is_renewal: Optional[bool]
-    title: Optional[str]
+    id: Optional[str] = None
+    date_tz: Optional[datetime] = None
+    price: Optional[str] = None
+    tax: Optional[str] = None
+    refund: Optional[str] = None
+    is_renewal: Optional[bool] = None
+    title: Optional[str] = None
     description: str = 'Google Play Store: Order'
 
     def __init__(self, raw):
@@ -52,10 +52,10 @@ class Order(BaseModel):
 
 class Review(BaseModel):
     raw: dict
-    title: Optional[str]
-    date_tz: Optional[datetime]
-    rating: Optional[int]
-    comment: Optional[str]
+    title: Optional[str] = None
+    date_tz: Optional[datetime] = None
+    rating: Optional[int] = None
+    comment: Optional[str] = None
     description: str = 'Google Play Store: Review'
 
     def __init__(self, raw):
@@ -74,9 +74,9 @@ class Review(BaseModel):
 
 class Install(BaseModel):
     raw: dict
-    title: Optional[str]
-    date_tz: Optional[datetime]
-    last_update: Optional[datetime]
+    title: Optional[str] = None
+    date_tz: Optional[datetime] = None
+    last_update: Optional[datetime] = None
     description: str = 'Google Play Store: Install'
 
     def __init__(self, raw):
@@ -101,9 +101,9 @@ class Install(BaseModel):
 
 class Purchase(BaseModel):
     raw: dict
-    invoice_price: Optional[str]
-    title: Optional[str]
-    date_tz: Optional[datetime]
+    invoice_price: Optional[str] = None
+    title: Optional[str] = None
+    date_tz: Optional[datetime] = None
     description: str = 'Google Play Store: Purchase'
 
     def __init__(self, raw):
@@ -118,12 +118,12 @@ class Purchase(BaseModel):
 
 class Subscription(BaseModel):
     raw: dict
-    period: Optional[str]
-    title: Optional[str]
-    pricing: Optional[list]
-    action_record: Optional[list]
-    state: Optional[str]
-    expiration_date: Optional[datetime]
+    period: Optional[str] = None
+    title: Optional[str] = None
+    pricing: Optional[list] = None
+    action_record: Optional[list] = None
+    state: Optional[str] = None
+    expiration_date: Optional[datetime] = None
     description: str = 'Google Play Store: Subscription'
 
 

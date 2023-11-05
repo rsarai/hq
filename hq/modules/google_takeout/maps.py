@@ -29,9 +29,9 @@ class Saved(BaseModel):
     latitude: float
     longitude: float
     url: str
-    address: Optional[str]
+    address: Optional[str] = None
     name: str
-    country: Optional[str]
+    country: Optional[str] = None
 
     def __init__(self, raw):
         data = {"raw": raw}
@@ -57,11 +57,11 @@ class Location(BaseModel):
     raw: dict
     latitudeE7: int
     longitudeE7: int
-    accuracy: Optional[int]
-    source: Optional[str]
+    accuracy: Optional[int] = None
+    source: Optional[str] = None
     date_tz: datetime
-    altitude: Optional[int]
-    device_tag: Optional[str]
+    altitude: Optional[int] = None
+    device_tag: Optional[str] = None
 
     def __init__(self, raw):
         data = {"raw": raw}
@@ -86,9 +86,9 @@ class Place(BaseModel):
     latitudeE7: int
     longitudeE7: int
     placeId: str
-    address: Optional[str]
-    name: Optional[str]
-    device_tag: Optional[str]
+    address: Optional[str] = None
+    name: Optional[str] = None
+    device_tag: Optional[str] = None
     duration_start: datetime
     duration_end: datetime
     date_tz: datetime
@@ -127,14 +127,14 @@ class Place(BaseModel):
 
 class ActivitySegment(BaseModel):
     raw: dict
-    start_location: Optional[Location]
-    end_location: Optional[Location]
+    start_location: Optional[Location] = None
+    end_location: Optional[Location] = None
     duration_start: datetime
     duration_end: datetime
     date_tz: datetime
-    distance: Optional[int]
-    activity_type: Optional[str]
-    confidence: Optional[str]
+    distance: Optional[int] = None
+    activity_type: Optional[str] = None
+    confidence: Optional[str] = None
 
     def __init__(self, raw):
         data = {"raw": raw}

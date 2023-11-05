@@ -61,15 +61,15 @@ timezone = pytz.timezone("America/Recife")
 
 class Link(BaseModel):
     raw: dict
-    url: Optional[str]
-    title: Optional[str]
-    visit_count: Optional[int]
-    typed_count: Optional[int]
-    hidden: Optional[int]
-    transition: Optional[int]
-    publicly_routable: Optional[int]
-    date_tz: Optional[datetime]
-    visit_time: Optional[datetime]
+    url: Optional[str] = None
+    title: Optional[str] = None
+    visit_count: Optional[int] = None
+    typed_count: Optional[int] = None
+    hidden: Optional[int] = None
+    transition: Optional[int] = None
+    publicly_routable: Optional[int] = None
+    date_tz: Optional[datetime] = None
+    visit_time: Optional[datetime] = None
 
     def __init__(self, raw):
         data = {"raw": raw}

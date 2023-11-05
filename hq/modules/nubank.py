@@ -10,12 +10,12 @@ from hq.config import Nubank as config
 
 class CardFeedEvent(BaseModel):
     raw: dict
-    description: Optional[str]
-    category: Optional[str]
-    title: Optional[str]
-    date_tz: Optional[datetime]
-    amount: Optional[float]
-    amount_without_iof: Optional[float]
+    description: Optional[str] = None
+    category: Optional[str] = None
+    title: Optional[str] = None
+    date_tz: Optional[datetime] = None
+    amount: Optional[float] = None
+    amount_without_iof: Optional[float] = None
 
     def __init__(self, raw):
         if raw.get("account"):
@@ -61,19 +61,19 @@ class CardFeedEvent(BaseModel):
 
 class Bills(BaseModel):
     raw: dict
-    paid: Optional[float]
-    interest: Optional[float]
-    past_balance: Optional[float]
-    total_balance: Optional[float]
-    interest_rate: Optional[float]
-    total_cumulative: Optional[float]
-    remaining_balance: Optional[float]
-    remaining_minimum_payment: Optional[float]
-    minimum_payment: Optional[float]
-    due_date: Optional[datetime]
-    open_date: Optional[datetime]
-    close_date: Optional[datetime]
-    effective_due_date: Optional[datetime]
+    paid: Optional[float] = None
+    interest: Optional[float] = None
+    past_balance: Optional[float] = None
+    total_balance: Optional[float] = None
+    interest_rate: Optional[float] = None
+    total_cumulative: Optional[float] = None
+    remaining_balance: Optional[float] = None
+    remaining_minimum_payment: Optional[float] = None
+    minimum_payment: Optional[float] = None
+    due_date: Optional[datetime] = None
+    open_date: Optional[datetime] = None
+    close_date: Optional[datetime] = None
+    effective_due_date: Optional[datetime] = None
 
     def __init__(self, raw):
         data = {"raw": raw}
@@ -123,13 +123,13 @@ class Bills(BaseModel):
 
 class AccountEvent(BaseModel):
     raw: dict
-    typename: Optional[str]
-    title: Optional[str]
-    detail: Optional[str]
-    date_tz: Optional[datetime]
-    amount: Optional[float]
-    origin_account: Optional[dict]
-    destination_account: Optional[dict]
+    typename: Optional[str] = None
+    title: Optional[str] = None
+    detail: Optional[str] = None
+    date_tz: Optional[datetime] = None
+    amount: Optional[float] = None
+    origin_account: Optional[dict] = None
+    destination_account: Optional[dict] = None
 
     def __init__(self, raw):
         del raw["id"]
@@ -160,22 +160,22 @@ class AccountEvent(BaseModel):
 
 class BillDetails(BaseModel):
     raw: dict
-    file_name: Optional[str]
-    state: Optional[str]
-    late_interest_rate: Optional[float]
-    past_balance: Optional[float]
-    late_fee: Optional[float]
-    total_balance: Optional[float]
-    interest_rate: Optional[float]
-    total_cumulative: Optional[float]
-    interest: Optional[float]
-    line_items: Optional[list]
-    paid: Optional[float]
-    minimum_payment: Optional[float]
-    due_date: Optional[datetime]
-    open_date: Optional[datetime]
-    close_date: Optional[datetime]
-    effective_due_date: Optional[datetime]
+    file_name: Optional[str] = None
+    state: Optional[str] = None
+    late_interest_rate: Optional[float] = None
+    past_balance: Optional[float] = None
+    late_fee: Optional[float] = None
+    total_balance: Optional[float] = None
+    interest_rate: Optional[float] = None
+    total_cumulative: Optional[float] = None
+    interest: Optional[float] = None
+    line_items: Optional[list] = None
+    paid: Optional[float] = None
+    minimum_payment: Optional[float] = None
+    due_date: Optional[datetime] = None
+    open_date: Optional[datetime] = None
+    close_date: Optional[datetime] = None
+    effective_due_date: Optional[datetime] = None
 
     def __init__(self, raw, file_name=None):
         if raw.get('id'):
