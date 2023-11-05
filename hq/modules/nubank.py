@@ -160,6 +160,7 @@ class AccountEvent(BaseModel):
 
 class BillDetails(BaseModel):
     raw: dict
+    file_name: Optional[str]
     state: Optional[str]
     late_interest_rate: Optional[float]
     past_balance: Optional[float]
@@ -176,13 +177,14 @@ class BillDetails(BaseModel):
     close_date: Optional[datetime]
     effective_due_date: Optional[datetime]
 
-    def __init__(self, raw):
+    def __init__(self, raw, file_name=None):
         if raw.get('id'):
             del raw["id"]
 
         if raw.get('_links'):
             del raw["_links"]
         data = {"raw": raw}
+        data["file_name"] = file_name
         data["state"] = raw.get("state")
 
         summary = raw.get("summary")
@@ -198,9 +200,18 @@ class BillDetails(BaseModel):
         effective_due_date = summary["effective_due_date"]
         data["effective_due_date"] = parse_datetime(effective_due_date, "%Y-%m-%d")
 
-        data["late_interest_rate"] = round(float(summary["late_interest_rate"]), 2)
+
+        data["late_interest_rate"] = (
+            round(float(summary["late_interest_rate"]), 2)
+            if summary.get("late_interest_rate")
+            else None
+        )
         data["past_balance"] = round(float(summary["past_balance"]), 2)
-        data["late_fee"] = round(float(summary["late_fee"]), 2)
+        data["late_fee"] = (
+            round(float(summary["late_fee"]), 2)
+            if summary.get("late_fee")
+            else None
+        )
         data["interest_rate"] = round(float(summary["interest_rate"]), 2)
 
         total_balance = str(summary["total_balance"])
@@ -260,7 +271,11 @@ def get_account_statements_files():
 
 
 def get_bill_details_files():
-    return get_files(config.export_path, '*/*bill-detail.json')
+    return list(sorted(get_files(config.export_path, '*/*bill-detail.json')))
+
+
+def get_bill_future_details_files():
+    return [max(get_files(config.export_path, '*/future-bill-detail.json'))]
 
 
 def get_file_paths():
@@ -340,9 +355,16 @@ def process_bill_details(input_files=None):
         bill = bill_data.get("bill")
         if not bill:
             continue
-        yield BillDetails(bill)
+        yield BillDetails(bill, str(bill_file))
 
 
-def process_future_bill_details():
-    # TODO similar to process_bill_details
-    pass
+def process_future_bill_details(input_files=None):
+    if not input_files:
+        input_files = get_bill_future_details_files()
+
+    for bill_file in input_files:
+        bill_data = json.loads(bill_file.read_bytes())
+        bills = bill_data.get("bills")
+
+        for bill in bills:
+            yield BillDetails(bill, str(bill_file))

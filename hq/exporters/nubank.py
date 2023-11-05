@@ -28,11 +28,13 @@ def dumper(data, path, filename):
 
 def generate_export():
     nu = Nubank()
-    nu.authenticate_with_cert(
+    refresh_token = nu.authenticate_with_cert(
         config.authentication["cpf"],
         config.authentication["password"],
         config.authentication["cert_path"]
     )
+    nu.authenticate_with_refresh_token(refresh_token, config.authentication["cert_path"])
+
     folder_name = datetime.today().strftime('%Y_%m_%d')
     export_path = config.export_path
 
