@@ -2,12 +2,17 @@ import json
 import itertools
 from typing import List
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from hq.api import handler
 from hq.modules import (
     bash, habits, daylio, chrome, toggl, github, rescuetime, nubank, wakatime,
-    google_takeout
+)
+from hq.modules.google_takeout import (
+    calendar as google_takeout_calendar,
+    maps as google_takeout_maps,
+    my_activity as google_takeout_activity,
+    play_store as google_takeout_play_store,
 )
 
 @dataclass
@@ -23,11 +28,11 @@ class ImportManager:
     has_google_takeout_calendar: bool = True
     has_google_takeout_maps_semantic: bool = True
     has_google_takeout_my_activity: bool = True
-    has_google_takeout_play_store: bool = False
+    has_google_takeout_play_store: bool = True
     has_google_takeout_youtube: bool = False
     has_wakatime: bool = True
-    state_file: str = '.db.json'
-    working_files: List = []
+    state_file: str = '.db_v2.json'
+    working_files: List = field(default_factory=list)
 
     def available_importers(self):
         return f"""
@@ -53,7 +58,7 @@ class ImportManager:
         all_gh_events_files = all_gh_notification_files = all_nubank_card_files = []
         all_nubank_account_files = all_nubank_bills_files = all_wakatime_files = []
         all_google_takeout_calendar = all_google_takeout_maps_files = []
-        all_google_takeout_my_activity_files = []
+        all_google_takeout_my_activity_files = all_gt_play_store_files = []
 
         if self.has_bash:
             all_bash_files = bash.get_file_paths()
@@ -117,15 +122,15 @@ class ImportManager:
             yield from handler.process_wakatime(wakatime_data_generator)
 
         if self.has_google_takeout_calendar:
-            all_google_takeout_calendar = google_takeout.calendar.get_file_paths()
-            google_takeout_calendar_generator = google_takeout.calendar.process_my_calendars(
+            all_google_takeout_calendar = google_takeout_calendar.get_file_paths()
+            google_takeout_calendar_generator = google_takeout_calendar.process_my_calendars(
                 all_google_takeout_calendar
             )
             yield from handler.process_google_takeout_calendar(google_takeout_calendar_generator)
 
         if self.has_google_takeout_maps_semantic:
-            all_google_takeout_maps_files = google_takeout.maps.get_file_paths()
-            google_takeout_maps_generator = google_takeout.maps.process_semantic_locations(
+            all_google_takeout_maps_files = google_takeout_maps.get_file_paths()
+            google_takeout_maps_generator = google_takeout_maps.process_semantic_locations(
                 all_google_takeout_maps_files
             )
             yield from handler.process_google_takeout_maps_semantic_locations(
@@ -133,11 +138,16 @@ class ImportManager:
             )
 
         if self.has_google_takeout_my_activity:
-            all_google_takeout_my_activity_files = google_takeout.my_activity.get_my_activities_file_paths()
-            gt_activity_generator = google_takeout.my_activity.process_my_activities(
+            all_google_takeout_my_activity_files = google_takeout_activity.get_my_activities_file_paths()
+            gt_activity_generator = google_takeout_activity.process_my_activities(
                 all_google_takeout_my_activity_files
             )
             yield from handler.process_google_takeout_my_activity(gt_activity_generator)
+
+        if self.has_google_takeout_play_store:
+            all_gt_play_store_files = google_takeout_play_store.get_file_paths()
+            gt_play_store_generator = google_takeout_play_store.process(all_gt_play_store_files)
+            yield from handler.process_google_takeout_play_store(gt_play_store_generator)
 
         self.working_files.extend([
             all_bash_files,
@@ -156,6 +166,7 @@ class ImportManager:
             all_google_takeout_calendar,
             all_google_takeout_maps_files,
             all_google_takeout_my_activity_files,
+            all_gt_play_store_files,
         ])
 
     def mark_import_as_completed(self):
@@ -258,17 +269,17 @@ class ImportManager:
             yield from handler.process_wakatime(wakatime_data_generator)
 
         if self.has_google_takeout_calendar:
-            all_google_takeout_calendar = [str(i) for i in google_takeout.calendar.get_file_paths()]
+            all_google_takeout_calendar = [str(i) for i in google_takeout_calendar.get_file_paths()]
             all_google_takeout_calendar = set(all_google_takeout_calendar) - set(processed_files)
-            google_takeout_calendar_generator = google_takeout.calendar.process_my_calendars(
+            google_takeout_calendar_generator = google_takeout_calendar.process_my_calendars(
                 all_google_takeout_calendar
             )
             yield from handler.process_google_takeout_calendar(google_takeout_calendar_generator)
 
         if self.has_google_takeout_maps_semantic:
-            all_google_takeout_maps_files = [str(i) for i in google_takeout.maps.get_file_paths()]
+            all_google_takeout_maps_files = [str(i) for i in google_takeout_maps.get_file_paths()]
             all_google_takeout_maps_files = set(all_google_takeout_maps_files) - set(processed_files)
-            google_takeout_maps_generator = google_takeout.maps.process_semantic_locations(
+            google_takeout_maps_generator = google_takeout_maps.process_semantic_locations(
                 all_google_takeout_maps_files
             )
             yield from handler.process_google_takeout_maps_semantic_locations(
@@ -276,12 +287,18 @@ class ImportManager:
             )
 
         if self.has_google_takeout_my_activity:
-            all_google_takeout_my_activity_files = [str(i) for i in google_takeout.my_activity.get_my_activities_file_paths()]
+            all_google_takeout_my_activity_files = [str(i) for i in google_takeout_activity.get_my_activities_file_paths()]
             all_google_takeout_my_activity_files = set(all_google_takeout_my_activity_files) - set(processed_files)
-            gt_activity_generator = google_takeout.my_activity.process_my_activities(
+            gt_activity_generator = google_takeout_activity.process_my_activities(
                 all_google_takeout_my_activity_files
             )
             yield from handler.process_google_takeout_my_activity(gt_activity_generator)
+
+        if self.has_google_takeout_play_store:
+            all_gt_play_store_files = [str(i) for i in google_takeout_play_store.get_file_paths()]
+            all_gt_play_store_files = set(all_gt_play_store_files) - set(processed_files)
+            gt_play_store_generator = google_takeout_play_store.process(all_gt_play_store_files)
+            yield from handler.process_google_takeout_play_store(gt_play_store_generator)
 
         self.working_files.extend([
             all_bash_files,
@@ -300,4 +317,5 @@ class ImportManager:
             all_google_takeout_calendar,
             all_google_takeout_maps_files,
             all_google_takeout_my_activity_files,
+            all_gt_play_store_files,
         ])

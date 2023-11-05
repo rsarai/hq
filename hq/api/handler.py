@@ -1,4 +1,5 @@
 import pytz
+from datetime import datetime
 
 
 def process_bash(data_iterable=None):
@@ -212,7 +213,7 @@ def process_nubank_card_feed(data_iterable=None):
         data["timestamp_utc"] = str(event.date_tz.astimezone(pytz.utc).timestamp()),
         data["datetime"] = event.date_tz
         data["timezone"] = "America/Recife"
-        data["summary"] = f"Transaction on nubank card feed: {event.description} {event.detail} R${event.amount}"
+        data["summary"] = f"Transaction on nubank card feed: {event.description} R${event.amount}"
         del data["raw"]
         yield data
 
@@ -272,9 +273,9 @@ def process_wakatime(data_iterable=None):
         data["timezone"] = "America/Recife"
         data["timestamp_utc"] = str(event.date_tz.astimezone(pytz.utc).timestamp()),
         data["datetime"] = event.date_tz
-
-        projects = ", ".join([p.name for p in event.projects])
-        data["summary"] = f"Tracked {event.grand_total.text} through wakatime working on {projects}"
+        projects = ", ".join([p.get("name") for p in event.projects])
+        grand_total = event.grand_total.get("text")
+        data["summary"] = f"Tracked {grand_total} through wakatime working on {projects}"
         del data["raw"]
         yield data
 
@@ -295,6 +296,18 @@ def process_google_takeout_calendar(data_iterable=None):
         data["datetime"] = calendar.begin
         data["summary"] = f"Participated in the a \"{calendar.name}\" meeting"
         del data["raw"]
+        del data["tz"]
+        del data["attendees"]
+        del data["categories"]
+        del data["alarms"]
+
+        keys_to_delete = []
+        for key, value in data.items():
+            if isinstance(value, datetime):
+                keys_to_delete.append(key)
+        for key in keys_to_delete:
+            del data[key]
+
         yield data
 
 
@@ -311,10 +324,19 @@ def process_google_takeout_maps_semantic_locations(data_iterable=None):
         data["activity_entities"] = ["location"]
         data["timestamp_utc"] = str(entry.date_tz.astimezone(pytz.utc).timestamp()),
         data["datetime"] = entry.date_tz
-        data["latitude"] = entry.latitudeE7 / 10_000_000
-        data["longitude"] = entry.longitudeE7  / 10_000_000
+        data["latitude"] = entry.latitudeE7 / 10_000_000 if entry.latitudeE7 else None
+        data["longitude"] = entry.longitudeE7  / 10_000_000 if entry.longitudeE7 else None
         data["summary"] = f"Stayed on \"{entry.name}\" (full address: {entry.address})"
         del data["raw"]
+
+        keys_to_delete = []
+        for key, value in data.items():
+            if isinstance(value, datetime):
+                keys_to_delete.append(key)
+        for key in keys_to_delete:
+            del data[key]
+
+        yield data
 
 
 def process_google_takeout_my_activity(data_iterable=None):
@@ -333,6 +355,15 @@ def process_google_takeout_my_activity(data_iterable=None):
         data["summary"] = f"Engaged with {entry.title} and {entry.content}"
         del data["raw"]
 
+        keys_to_delete = []
+        for key, value in data.items():
+            if isinstance(value, datetime):
+                keys_to_delete.append(key)
+        for key in keys_to_delete:
+            del data[key]
+
+        yield data
+
 
 def process_google_takeout_play_store(data_iterable=None):
     print("Processing google takeout play store stats")
@@ -345,7 +376,19 @@ def process_google_takeout_play_store(data_iterable=None):
         data["activity"] = "engaged"
         data["principal_entity"] = "Rebeca Sarai"
         data["activity_entities"] = ["play store"]
-        data["timestamp_utc"] = str(entry.date_tz.astimezone(pytz.utc).timestamp()),
-        data["datetime"] = entry.date_tz
+        if hasattr(entry, "date_tz") and getattr(entry, "date_tz"):
+            data["timestamp_utc"] = str(entry.date_tz.astimezone(pytz.utc).timestamp()),
+            data["datetime"] = entry.date_tz
+            del data["date_tz"]
         data["summary"] = f"Interacted with {entry.description} \"{entry.title}\""
-        del data["date_tz"]
+
+        del data["raw"]
+
+        keys_to_delete = []
+        for key, value in data.items():
+            if isinstance(value, datetime):
+                keys_to_delete.append(key)
+        for key in keys_to_delete:
+            del data[key]
+
+        yield data

@@ -123,7 +123,7 @@ class Subscription(BaseModel):
     pricing: Optional[list] = None
     action_record: Optional[list] = None
     state: Optional[str] = None
-    expiration_date: Optional[datetime] = None
+    date_tz: Optional[datetime] = None
     description: str = 'Google Play Store: Subscription'
 
 
@@ -136,7 +136,7 @@ class Subscription(BaseModel):
 
         date = raw.get("subscription", {}).get("expirationDate")
         if date:
-            data["expiration_date"] = parse_datetime(date, '%Y-%m-%dT%H:%M:%S.%fZ')
+            data["date_tz"] = parse_datetime(date, '%Y-%m-%dT%H:%M:%S.%fZ')
 
         data["pricing"] = raw.get("subscription", {}).get("pricing")
         data["action_record"] = raw.get("subscription", {}).get("userChangeRecord")

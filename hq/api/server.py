@@ -18,7 +18,7 @@ page_query_param = 'page'
 
 client = MongoClient()
 db = client.get_database("memex")
-collection = db.get_collection("eventlog")
+collection = db.get_collection("eventlog_v2")
 
 
 def parse_json(data):

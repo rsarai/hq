@@ -7,7 +7,7 @@ from hq.routines import manager
 def reset():
     client = MongoClient()
     db = client.get_database("memex")
-    collection = db.get_collection("eventlog")
+    collection = db.get_collection("eventlog_v2")
     collection.remove({})
 
     memex_manager = manager.ImportManager()
@@ -20,7 +20,7 @@ def mount_memex():
 
     client = MongoClient()
     db = client.get_database("memex")
-    collection = db.get_collection("eventlog")
+    collection = db.get_collection("eventlog_v2")
 
     collection.remove({})
     collection.insert_many(list(content))
@@ -48,7 +48,7 @@ def update_memex():
 
     client = MongoClient()
     db = client.get_database("memex")
-    collection = db.get_collection("eventlog")
+    collection = db.get_collection("eventlog_v2")
 
     collection.insert_many(list(updates))
     memex_manager.mark_import_as_completed()

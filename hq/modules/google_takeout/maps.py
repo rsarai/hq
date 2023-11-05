@@ -182,7 +182,6 @@ def get_file_paths():
 def process_semantic_locations(input_files=None):
     if not input_files:
         input_files = get_file_paths()
-    print("input files", len(input_files))
 
     for zip_path in input_files:
         zf = zipfile.ZipFile(zip_path)
@@ -190,7 +189,6 @@ def process_semantic_locations(input_files=None):
             i for i in zf.filelist
             if FOLDER_PREFIX in str(i) and SEMANTIC_FOLDERS_PREFIX in str(i)
         ]
-        print("location_files", len(location_files))
         for file_name in location_files:
             with zf.open(file_name) as f:
                 content = json.load(f)
@@ -200,9 +198,9 @@ def process_semantic_locations(input_files=None):
                     if placeVisit:
                         yield Place(placeVisit)
 
-                    activitySegment = info.get("activitySegment")
-                    if activitySegment:
-                        yield ActivitySegment(activitySegment)
+                    # activitySegment = info.get("activitySegment")
+                    # if activitySegment:
+                    #     yield ActivitySegment(activitySegment)
 
 
 def process_locations(input_files=None):

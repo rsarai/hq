@@ -39,8 +39,8 @@ class Event(BaseModel):
     url: Optional[str] = None
     transparent: Optional[bool] = False
     alarms: Optional[list] = []
-    attendees: Optional[Set] = set()
-    categories: Optional[Set] = set()
+    attendees: Optional[list] = []
+    categories: Optional[list] = []
     geo: Optional[str] = None
     name: Optional[str] = None
     tz: Optional[Any] = None
