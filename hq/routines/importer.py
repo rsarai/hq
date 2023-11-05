@@ -38,7 +38,7 @@ def mount_memex():
         ("things_i_did", pymongo.TEXT),
         ("description", pymongo.TEXT),
         ("detail", pymongo.TEXT),
-        ("project_name", pymongo.TEXT),
+        ("summary", pymongo.TEXT),
     ])
 
 

@@ -52,122 +52,182 @@ class ImportManager:
             wakatime = {self.has_wakatime}
         """
 
+    def _process_bash(self, bash_file_paths):
+        bash_data_generator = bash.process(bash_file_paths)
+        yield from handler.process_bash(bash_data_generator)
+
+    def _process_habits(self, file_paths):
+        habits_data_generator = habits.process(file_paths)
+        yield from handler.process_habits(habits_data_generator)
+
+    def _process_daylio(self, file_paths):
+        daylio_data_generator = daylio.process(file_paths)
+        yield from handler.process_moods(daylio_data_generator)
+
+    def _process_chrome(self, file_paths):
+        chrome_data_generator = chrome.process(file_paths)
+        yield from handler.process_google_chrome(chrome_data_generator)
+
+    def _process_toggl(self, file_paths):
+        toggl_data_generator = toggl.process(file_paths)
+        yield from handler.process_toggl(toggl_data_generator)
+
+    def _process_rescue_time_summary(self, file_paths):
+        rescuetime_data_generator = rescuetime.process_daily_summary(file_paths)
+        yield from handler.process_rescue_time_summary(rescuetime_data_generator)
+
+    def _process_rescue_time_analytics(self, file_paths):
+        rescuetime_data_generator = rescuetime.process_analytic_data(file_paths)
+        yield from handler.process_rescue_time_analytics(rescuetime_data_generator)
+
+    def _process_github_events(self, file_paths):
+        github_data_generator = github.process_events(file_paths)
+        yield from handler.process_github_events(github_data_generator)
+
+    def _process_github_notifications(self, file_paths):
+        github_data_generator = github.process_notifications(file_paths)
+        yield from handler.process_github_notifications(github_data_generator)
+
+    def _process_nubank_card_feed(self, file_paths):
+        nubank_data_generator = nubank.process_card_feed(file_paths)
+        yield from handler.process_nubank_card_feed(nubank_data_generator)
+
+    def _process_nubank_account_feed(self, file_paths):
+        nubank_data_generator = nubank.process_account_feed(file_paths)
+        yield from handler.process_nubank_account_feed(nubank_data_generator)
+
+    def _process_nubank_bills(self, file_paths):
+        nubank_data_generator = nubank.process_bill_details(file_paths)
+        yield from handler.process_nubank_bills(nubank_data_generator)
+
+    def _process_wakatime(self, file_paths):
+        wakatime_data_generator = wakatime.process(file_paths)
+        yield from handler.process_wakatime(wakatime_data_generator)
+
+    def _process_google_takeout_calendar(self, file_paths):
+        google_takeout_calendar_generator = google_takeout_calendar.process_my_calendars(file_paths)
+        yield from handler.process_google_takeout_calendar(google_takeout_calendar_generator)
+
+    def _process_google_takeout_maps_semantic_locations(self, file_paths):
+        google_takeout_maps_generator = google_takeout_maps.process_semantic_locations(
+            file_paths
+        )
+        yield from handler.process_google_takeout_maps_semantic_locations(
+            google_takeout_maps_generator
+        )
+
+    def _process_google_takeout_my_activity(self, file_paths):
+        gt_activity_generator = google_takeout_activity.process_my_activities(
+            file_paths
+        )
+        yield from handler.process_google_takeout_my_activity(gt_activity_generator)
+
+    def _process_google_takeout_play_store(self, file_paths):
+        gt_play_store_generator = google_takeout_play_store.process(file_paths)
+        yield from handler.process_google_takeout_play_store(gt_play_store_generator)
+
     def fetch_memex_first_import(self):
-        all_bash_files = all_habits_files = all_mood_files = all_browser_files = []
-        all_toggl_files = all_rc_summary_files = all_rc_analytics_files = []
-        all_gh_events_files = all_gh_notification_files = all_nubank_card_files = []
-        all_nubank_account_files = all_nubank_bills_files = all_wakatime_files = []
-        all_google_takeout_calendar = all_google_takeout_maps_files = []
-        all_google_takeout_my_activity_files = all_gt_play_store_files = []
+        files_dict = {
+            "all_bash_files": bash.get_file_paths(),
+            "all_habits_files": habits.get_file_paths(),
+            "all_mood_files": daylio.get_file_paths(),
+            "all_browser_files": chrome.get_file_paths(),
+            "all_toggl_files": toggl.get_file_paths(),
+            "all_rc_summary_files": rescuetime.get_daily_summary_file_paths(),
+            "all_rc_analytics_files": rescuetime.get_analytic_data_file_paths(),
+            "all_gh_events_files": github.get_events_file_paths(),
+            "all_gh_notification_files": github.get_notification_file_paths(),
+            "all_nubank_card_files": nubank.get_card_feed_files(),
+            "all_nubank_account_files": nubank.get_account_feed_files(),
+            "all_nubank_bills_files": nubank.get_bill_details_files(),
+            "all_wakatime_files": wakatime.get_file_paths(),
+            "all_google_takeout_calendar": google_takeout_calendar.get_file_paths(),
+            "all_google_takeout_maps_files": google_takeout_maps.get_file_paths(),
+            "all_google_takeout_my_activity_files": google_takeout_activity.get_my_activities_file_paths(),
+            "all_gt_play_store_files": google_takeout_play_store.get_file_paths(),
+        }
 
-        if self.has_bash:
-            all_bash_files = bash.get_file_paths()
-            bash_data_generator = bash.process(all_bash_files)
-            yield from handler.process_bash(bash_data_generator)
+        yield from self.process_providers_by_files(files_dict)
+        for key_files in files_dict.values():
+            self.working_files.extend([key_files])
 
-        if self.has_habits:
-            all_habits_files = habits.get_file_paths()
-            habits_data_generator = habits.process(all_habits_files)
-            yield from handler.process_habits(habits_data_generator)
+    def fetch_updates(self):
+        with open(self.state_file, 'r') as f:
+            content = json.load(f)
+        processed_files = content["processed_files"]
 
-        if self.has_daylio:
-            all_mood_files = daylio.get_file_paths()
-            daylio_data_generator = daylio.process(all_mood_files)
-            yield from handler.process_moods(daylio_data_generator)
+        files_dict = {}
+        all_bash_files = [str(i) for i in bash.get_file_paths()]
+        all_bash_files = set(all_bash_files) - set(processed_files)
+        files_dict["all_bash_files"] = all_bash_files
 
-        if self.has_chrome:
-            all_browser_files = chrome.get_file_paths()
-            chrome_data_generator = chrome.process(all_browser_files)
-            yield from handler.process_google_chrome(chrome_data_generator)
+        all_habits_files = [str(i) for i in habits.get_file_paths()]
+        all_habits_files = set(all_habits_files) - set(processed_files)
+        files_dict["all_habits_files"] = all_habits_files
 
-        if self.has_toggl:
-            all_toggl_files = toggl.get_file_paths()
-            toggl_data_generator = toggl.process(all_toggl_files)
-            yield from handler.process_toggl(toggl_data_generator)
+        all_mood_files = [str(i) for i in daylio.get_file_paths()]
+        all_mood_files = set(all_mood_files) - set(processed_files)
+        files_dict["all_mood_files"] = all_mood_files
 
-        if self.has_rescuetime:
-            all_rc_summary_files = rescuetime.get_daily_summary_file_paths()
-            rescuetime_data_generator = rescuetime.process_daily_summary(all_rc_summary_files)
-            yield from handler.process_rescue_time_summary(rescuetime_data_generator)
+        all_browser_files = [str(i) for i in chrome.get_file_paths()]
+        all_browser_files = set(all_browser_files) - set(processed_files)
+        files_dict["all_browser_files"] = all_browser_files
 
-            all_rc_analytics_files = rescuetime.get_analytic_data_file_paths()
-            rescuetime_data_generator = rescuetime.process_analytic_data(all_rc_analytics_files)
-            yield from handler.process_rescue_time_analytics(rescuetime_data_generator)
+        all_toggl_files = [str(i) for i in toggl.get_file_paths()]
+        all_toggl_files = set(all_toggl_files) - set(processed_files)
+        files_dict["all_toggl_files"] = all_toggl_files
 
-        if self.has_github:
-            all_gh_events_files = github.get_events_file_paths()
-            github_data_generator = github.process_events(all_gh_events_files)
-            yield from handler.process_github_events(github_data_generator)
+        all_rc_summary_files = [str(i) for i in rescuetime.get_daily_summary_file_paths()]
+        all_rc_summary_files = set(all_rc_summary_files) - set(processed_files)
+        files_dict["all_rc_summary_files"] = all_rc_summary_files
 
-            all_gh_notification_files = github.get_notification_file_paths()
-            github_data_generator = github.process_notifications(all_gh_notification_files)
-            yield from handler.process_github_notifications(github_data_generator)
+        all_rc_analytics_files = [str(i) for i in rescuetime.get_analytic_data_file_paths()]
+        all_rc_analytics_files = set(all_rc_analytics_files) - set(processed_files)
+        files_dict["all_rc_analytics_files"] = all_rc_analytics_files
 
-        if self.has_nubank:
-            all_nubank_card_files = nubank.get_card_feed_files()
-            nubank_data_generator = nubank.process_card_feed(all_nubank_card_files)
-            yield from handler.process_nubank_card_feed(nubank_data_generator)
+        all_gh_events_files = [str(i) for i in github.get_events_file_paths()]
+        all_gh_events_files = set(all_gh_events_files) - set(processed_files)
+        files_dict["all_gh_events_files"] = all_gh_events_files
 
-            all_nubank_account_files = nubank.get_account_feed_files()
-            nubank_data_generator = nubank.process_account_feed(all_nubank_account_files)
-            yield from handler.process_nubank_account_feed(nubank_data_generator)
+        all_gh_notification_files = [str(i) for i in github.get_notification_file_paths()]
+        all_gh_notification_files = set(all_gh_notification_files) - set(processed_files)
+        files_dict["all_gh_notification_files"] = all_gh_notification_files
 
-            all_nubank_bills_files = nubank.get_bill_details_files()
-            nubank_data_generator = nubank.process_bill_details(all_nubank_bills_files)
-            yield from handler.process_nubank_bills(nubank_data_generator)
+        all_nubank_card_files = [str(i) for i in nubank.get_card_feed_files()]
+        all_nubank_card_files = set(all_nubank_card_files) - set(processed_files)
+        files_dict["all_nubank_card_files"] = all_nubank_card_files
 
-        if self.has_wakatime:
-            all_wakatime_files = wakatime.get_file_paths()
-            wakatime_data_generator = wakatime.process(all_wakatime_files)
-            yield from handler.process_wakatime(wakatime_data_generator)
+        all_nubank_account_files = [str(i) for i in nubank.get_account_feed_files()]
+        all_nubank_account_files = set(all_nubank_account_files) - set(processed_files)
+        files_dict["all_nubank_account_files"] = all_nubank_account_files
 
-        if self.has_google_takeout_calendar:
-            all_google_takeout_calendar = google_takeout_calendar.get_file_paths()
-            google_takeout_calendar_generator = google_takeout_calendar.process_my_calendars(
-                all_google_takeout_calendar
-            )
-            yield from handler.process_google_takeout_calendar(google_takeout_calendar_generator)
+        all_nubank_bills_files = [str(i) for i in nubank.get_bill_details_files()]
+        all_nubank_bills_files = set(all_nubank_bills_files) - set(processed_files)
+        files_dict["all_nubank_bills_files"] = all_nubank_bills_files
 
-        if self.has_google_takeout_maps_semantic:
-            all_google_takeout_maps_files = google_takeout_maps.get_file_paths()
-            google_takeout_maps_generator = google_takeout_maps.process_semantic_locations(
-                all_google_takeout_maps_files
-            )
-            yield from handler.process_google_takeout_maps_semantic_locations(
-                google_takeout_maps_generator
-            )
+        all_wakatime_files = [str(i) for i in wakatime.get_file_paths()]
+        all_wakatime_files = set(all_wakatime_files) - set(processed_files)
+        files_dict["all_wakatime_files"] = all_wakatime_files
 
-        if self.has_google_takeout_my_activity:
-            all_google_takeout_my_activity_files = google_takeout_activity.get_my_activities_file_paths()
-            gt_activity_generator = google_takeout_activity.process_my_activities(
-                all_google_takeout_my_activity_files
-            )
-            yield from handler.process_google_takeout_my_activity(gt_activity_generator)
+        all_google_takeout_calendar = [str(i) for i in google_takeout_calendar.get_file_paths()]
+        all_google_takeout_calendar = set(all_google_takeout_calendar) - set(processed_files)
+        files_dict["all_google_takeout_calendar"] = all_google_takeout_calendar
 
-        if self.has_google_takeout_play_store:
-            all_gt_play_store_files = google_takeout_play_store.get_file_paths()
-            gt_play_store_generator = google_takeout_play_store.process(all_gt_play_store_files)
-            yield from handler.process_google_takeout_play_store(gt_play_store_generator)
+        all_google_takeout_maps_files = [str(i) for i in google_takeout_maps.get_file_paths()]
+        all_google_takeout_maps_files = set(all_google_takeout_maps_files) - set(processed_files)
+        files_dict["all_google_takeout_maps_files"] = all_google_takeout_maps_files
 
-        self.working_files.extend([
-            all_bash_files,
-            all_habits_files,
-            all_mood_files,
-            all_browser_files,
-            all_toggl_files,
-            all_rc_summary_files,
-            all_rc_analytics_files,
-            all_gh_events_files,
-            all_gh_notification_files,
-            all_nubank_card_files,
-            all_nubank_account_files,
-            all_nubank_bills_files,
-            all_wakatime_files,
-            all_google_takeout_calendar,
-            all_google_takeout_maps_files,
-            all_google_takeout_my_activity_files,
-            all_gt_play_store_files,
-        ])
+        all_google_takeout_my_activity_files = [str(i) for i in google_takeout_activity.get_my_activities_file_paths()]
+        all_google_takeout_my_activity_files = set(all_google_takeout_my_activity_files) - set(processed_files)
+        files_dict["all_google_takeout_my_activity_files"] = all_google_takeout_my_activity_files
+
+        all_gt_play_store_files = [str(i) for i in google_takeout_play_store.get_file_paths()]
+        all_gt_play_store_files = set(all_gt_play_store_files) - set(processed_files)
+        files_dict["all_gt_play_store_files"] = all_gt_play_store_files
+
+        yield from self.process_providers_by_files(files_dict)
+        for key_files in files_dict.values():
+            self.working_files.extend([key_files])
 
     def mark_import_as_completed(self):
         assert self.working_files != []
@@ -182,140 +242,52 @@ class ImportManager:
             data = {"processed_files": []}
             json.dump(data, f)
 
-    def fetch_updates(self):
-        with open(self.state_file, 'r') as f:
-            content = json.load(f)
-        processed_files = content["processed_files"]
-
-        all_bash_files = all_habits_files = all_mood_files = []
-        all_browser_files = all_toggl_files = all_rc_summary_files = []
-        all_rc_analytics_files = all_gh_events_files = all_gh_notification_files = []
-        all_nubank_card_files = all_nubank_account_files = []
-        all_nubank_bills_files = all_wakatime_files = all_google_takeout_calendar = []
-        all_google_takeout_maps_files = all_google_takeout_my_activity_files = []
-
+    def process_providers_by_files(self, files_dict):
         if self.has_bash:
-            all_bash_files = [str(i) for i in bash.get_file_paths()]
-            all_bash_files = set(all_bash_files) - set(processed_files)
-            bash_data_generator = bash.process(all_bash_files)
-            yield from handler.process_bash(bash_data_generator)
+            yield from self._process_bash(files_dict["all_bash_files"])
 
         if self.has_habits:
-            all_habits_files = [str(i) for i in habits.get_file_paths()]
-            all_habits_files = set(all_habits_files) - set(processed_files)
-            habits_data_generator = habits.process(all_habits_files)
-            yield from handler.process_habits(habits_data_generator)
+            yield from self._process_habits(files_dict["all_habits_files"])
 
         if self.has_daylio:
-            all_mood_files = [str(i) for i in daylio.get_file_paths()]
-            all_mood_files = set(all_mood_files) - set(processed_files)
-            daylio_data_generator = daylio.process(all_mood_files)
-            yield from handler.process_moods(daylio_data_generator)
+            yield from self._process_daylio(files_dict["all_mood_files"])
 
         if self.has_chrome:
-            all_browser_files = [str(i) for i in chrome.get_file_paths()]
-            all_browser_files = set(all_browser_files) - set(processed_files)
-            chrome_data_generator = chrome.process(all_browser_files)
-            yield from handler.process_google_chrome(chrome_data_generator)
+            yield from self._process_chrome(files_dict["all_browser_files"])
 
         if self.has_toggl:
-            all_toggl_files = [str(i) for i in toggl.get_file_paths()]
-            all_toggl_files = set(all_toggl_files) - set(processed_files)
-            toggl_data_generator = toggl.process(all_toggl_files)
-            yield from handler.process_toggl(toggl_data_generator)
+            yield from self._process_toggl(files_dict["all_toggl_files"])
 
         if self.has_rescuetime:
-            all_rc_summary_files = [str(i) for i in rescuetime.get_daily_summary_file_paths()]
-            all_rc_summary_files = set(all_rc_summary_files) - set(processed_files)
-            rescuetime_data_generator = rescuetime.process_daily_summary(all_rc_summary_files)
-            yield from handler.process_rescue_time_summary(rescuetime_data_generator)
-
-            all_rc_analytics_files = [str(i) for i in rescuetime.get_analytic_data_file_paths()]
-            all_rc_analytics_files = set(all_rc_analytics_files) - set(processed_files)
-            rescuetime_data_generator = rescuetime.process_analytic_data(all_rc_analytics_files)
-            yield from handler.process_rescue_time_analytics(rescuetime_data_generator)
+            yield from self._process_rescue_time_summary(files_dict["all_rc_summary_files"])
+            yield from self._process_rescue_time_analytics(files_dict["all_rc_analytics_files"])
 
         if self.has_github:
-            all_gh_events_files = [str(i) for i in github.get_events_file_paths()]
-            all_gh_events_files = set(all_gh_events_files) - set(processed_files)
-            github_data_generator = github.process_events(all_gh_events_files)
-            yield from handler.process_github_events(github_data_generator)
-
-            all_gh_notification_files = [str(i) for i in github.get_notification_file_paths()]
-            all_gh_notification_files = set(all_gh_notification_files) - set(processed_files)
-            github_data_generator = github.process_notifications(all_gh_notification_files)
-            yield from handler.process_github_notifications(github_data_generator)
+            yield from self._process_github_events(files_dict["all_gh_events_files"])
+            yield from self._process_github_notifications(files_dict["all_gh_notification_files"])
 
         if self.has_nubank:
-            all_nubank_card_files = [str(i) for i in nubank.get_card_feed_files()]
-            all_nubank_card_files = set(all_nubank_card_files) - set(processed_files)
-            nubank_data_generator = nubank.process_card_feed(all_nubank_card_files)
-            yield from handler.process_nubank(nubank_data_generator)
-
-            all_nubank_account_files = [str(i) for i in nubank.get_account_feed_files()]
-            all_nubank_account_files = set(all_nubank_account_files) - set(processed_files)
-            nubank_data_generator = nubank.process_account_feed(all_nubank_account_files)
-            yield from handler.process_nubank_account_feed(nubank_data_generator)
-
-            all_nubank_bills_files = [str(i) for i in nubank.get_bill_details_files()]
-            all_nubank_bills_files = set(all_nubank_bills_files) - set(processed_files)
-            nubank_data_generator = nubank.process_bill_details(all_nubank_bills_files)
-            yield from handler.process_nubank_bills(nubank_data_generator)
+            yield from self._process_nubank_card_feed(files_dict["all_nubank_card_files"])
+            yield from self._process_nubank_account_feed(files_dict["all_nubank_account_files"])
+            yield from self._process_nubank_bills(files_dict["all_nubank_bills_files"])
 
         if self.has_wakatime:
-            all_wakatime_files = [str(i) for i in wakatime.get_file_paths()]
-            all_wakatime_files = set(all_wakatime_files) - set(processed_files)
-            wakatime_data_generator = wakatime.process(all_wakatime_files)
-            yield from handler.process_wakatime(wakatime_data_generator)
+            yield from self._process_wakatime(files_dict["all_wakatime_files"])
 
         if self.has_google_takeout_calendar:
-            all_google_takeout_calendar = [str(i) for i in google_takeout_calendar.get_file_paths()]
-            all_google_takeout_calendar = set(all_google_takeout_calendar) - set(processed_files)
-            google_takeout_calendar_generator = google_takeout_calendar.process_my_calendars(
-                all_google_takeout_calendar
-            )
-            yield from handler.process_google_takeout_calendar(google_takeout_calendar_generator)
+            yield from self._process_google_takeout_calendar(files_dict["all_google_takeout_calendar"])
 
         if self.has_google_takeout_maps_semantic:
-            all_google_takeout_maps_files = [str(i) for i in google_takeout_maps.get_file_paths()]
-            all_google_takeout_maps_files = set(all_google_takeout_maps_files) - set(processed_files)
-            google_takeout_maps_generator = google_takeout_maps.process_semantic_locations(
-                all_google_takeout_maps_files
-            )
-            yield from handler.process_google_takeout_maps_semantic_locations(
-                google_takeout_maps_generator
+            yield from self._process_google_takeout_maps_semantic_locations(
+                files_dict["all_google_takeout_maps_files"]
             )
 
         if self.has_google_takeout_my_activity:
-            all_google_takeout_my_activity_files = [str(i) for i in google_takeout_activity.get_my_activities_file_paths()]
-            all_google_takeout_my_activity_files = set(all_google_takeout_my_activity_files) - set(processed_files)
-            gt_activity_generator = google_takeout_activity.process_my_activities(
-                all_google_takeout_my_activity_files
+            yield from self._process_google_takeout_my_activity(
+                files_dict["all_google_takeout_my_activity_files"]
             )
-            yield from handler.process_google_takeout_my_activity(gt_activity_generator)
 
         if self.has_google_takeout_play_store:
-            all_gt_play_store_files = [str(i) for i in google_takeout_play_store.get_file_paths()]
-            all_gt_play_store_files = set(all_gt_play_store_files) - set(processed_files)
-            gt_play_store_generator = google_takeout_play_store.process(all_gt_play_store_files)
-            yield from handler.process_google_takeout_play_store(gt_play_store_generator)
-
-        self.working_files.extend([
-            all_bash_files,
-            all_habits_files,
-            all_mood_files,
-            all_browser_files,
-            all_toggl_files,
-            all_rc_summary_files,
-            all_rc_analytics_files,
-            all_gh_events_files,
-            all_gh_notification_files,
-            all_nubank_card_files,
-            all_nubank_account_files,
-            all_nubank_bills_files,
-            all_wakatime_files,
-            all_google_takeout_calendar,
-            all_google_takeout_maps_files,
-            all_google_takeout_my_activity_files,
-            all_gt_play_store_files,
-        ])
+            yield from self._process_google_takeout_play_store(
+                files_dict["all_gt_play_store_files"]
+            )
