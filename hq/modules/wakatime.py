@@ -15,12 +15,12 @@ def get_file_paths():
 
 class WakaStat(BaseModel):
     raw: dict
-    date_tz: Optional[datetime]
-    timezone: Optional[str]
+    date_tz: Optional[datetime] = None
+    timezone: Optional[str] = None
     projects: List[dict]
     machines: List[dict]
     languages: List[dict]
-    grand_total: Optional[dict]
+    grand_total: Optional[dict] = None
     categories: List[dict]
 
     def __init__(self, raw) -> None:

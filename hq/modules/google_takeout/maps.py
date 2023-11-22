@@ -29,9 +29,9 @@ class Saved(BaseModel):
     latitude: float
     longitude: float
     url: str
-    address: Optional[str]
+    address: Optional[str] = None
     name: str
-    country: Optional[str]
+    country: Optional[str] = None
 
     def __init__(self, raw):
         data = {"raw": raw}
@@ -57,11 +57,11 @@ class Location(BaseModel):
     raw: dict
     latitudeE7: int
     longitudeE7: int
-    accuracy: Optional[int]
-    source: Optional[str]
+    accuracy: Optional[int] = None
+    source: Optional[str] = None
     date_tz: datetime
-    altitude: Optional[int]
-    device_tag: Optional[str]
+    altitude: Optional[int] = None
+    device_tag: Optional[str] = None
 
     def __init__(self, raw):
         data = {"raw": raw}
@@ -86,9 +86,9 @@ class Place(BaseModel):
     latitudeE7: int
     longitudeE7: int
     placeId: str
-    address: Optional[str]
-    name: Optional[str]
-    device_tag: Optional[str]
+    address: Optional[str] = None
+    name: Optional[str] = None
+    device_tag: Optional[str] = None
     duration_start: datetime
     duration_end: datetime
     date_tz: datetime
@@ -127,14 +127,14 @@ class Place(BaseModel):
 
 class ActivitySegment(BaseModel):
     raw: dict
-    start_location: Optional[Location]
-    end_location: Optional[Location]
+    start_location: Optional[Location] = None
+    end_location: Optional[Location] = None
     duration_start: datetime
     duration_end: datetime
     date_tz: datetime
-    distance: Optional[int]
-    activity_type: Optional[str]
-    confidence: Optional[str]
+    distance: Optional[int] = None
+    activity_type: Optional[str] = None
+    confidence: Optional[str] = None
 
     def __init__(self, raw):
         data = {"raw": raw}
@@ -175,10 +175,13 @@ class ActivitySegment(BaseModel):
         super().__init__(**data)
 
 
+def get_file_paths():
+    return get_zip_file_paths(config.export_path)
+
+
 def process_semantic_locations(input_files=None):
     if not input_files:
-        input_files = get_zip_file_paths(config.export_path)
-    print("input files", len(input_files))
+        input_files = get_file_paths()
 
     for zip_path in input_files:
         zf = zipfile.ZipFile(zip_path)
@@ -186,7 +189,6 @@ def process_semantic_locations(input_files=None):
             i for i in zf.filelist
             if FOLDER_PREFIX in str(i) and SEMANTIC_FOLDERS_PREFIX in str(i)
         ]
-        print("location_files", len(location_files))
         for file_name in location_files:
             with zf.open(file_name) as f:
                 content = json.load(f)
@@ -196,14 +198,14 @@ def process_semantic_locations(input_files=None):
                     if placeVisit:
                         yield Place(placeVisit)
 
-                    activitySegment = info.get("activitySegment")
-                    if activitySegment:
-                        yield ActivitySegment(activitySegment)
+                    # activitySegment = info.get("activitySegment")
+                    # if activitySegment:
+                    #     yield ActivitySegment(activitySegment)
 
 
 def process_locations(input_files=None):
     if not input_files:
-        input_files = get_zip_file_paths(config.export_path)
+        input_files = get_file_paths()
 
     # for each account file export
     include_key = "Records.json"
@@ -225,7 +227,7 @@ def process_locations(input_files=None):
 
 def process_saved_locations(input_files=None):
     if not input_files:
-        input_files = get_zip_file_paths(config.export_path)
+        input_files = get_file_paths()
 
     # for each account file export
     include_key = "Lugares salvos.json"

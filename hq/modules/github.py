@@ -23,14 +23,14 @@ def get_notification_detail_file_paths():
 
 class Notification(BaseModel):
     raw: dict
-    github_id: Optional[int]
-    reason: Optional[str]
-    repository: Optional[dict]
-    url: Optional[str]
-    updated_at_str: Optional[str]
-    updated_at: Optional[datetime]
-    subject: Optional[dict]
-    summary: Optional[str]
+    github_id: Optional[int] = None
+    reason: Optional[str] = None
+    repository: Optional[dict] = None
+    url: Optional[str] = None
+    updated_at_str: Optional[str] = None
+    updated_at: Optional[datetime] = None
+    subject: Optional[dict] = None
+    summary: Optional[str] = None
 
     def __init__(self, raw, details) -> None:
         data = {"raw": raw}
@@ -70,24 +70,24 @@ class Notification(BaseModel):
 
 class Event(BaseModel):
     raw: dict
-    github_id: Optional[int]
-    type: Optional[str]
-    actor: Optional[str]
-    public: Optional[bool]
-    created_at: Optional[datetime]
-    repo: Optional[dict]
-    org: Optional[str]
-    create_data: Optional[dict]
-    delete_data: Optional[dict]
-    issue_comment_data: Optional[dict]
-    pull_request_data: Optional[dict]
-    pull_request_review_comment_data: Optional[dict]
-    pull_request_review_event_data: Optional[dict]
-    fork_data: Optional[dict]
-    push_data: Optional[dict]
-    watch_data: Optional[dict]
-    member_data: Optional[dict]
-    summary: Optional[str]
+    github_id: Optional[int] = None
+    type: Optional[str] = None
+    actor: Optional[str] = None
+    public: Optional[bool] = None
+    created_at: Optional[datetime] = None
+    repo: Optional[dict] = None
+    org: Optional[str] = None
+    create_data: Optional[dict] = None
+    delete_data: Optional[dict] = None
+    issue_comment_data: Optional[dict] = None
+    pull_request_data: Optional[dict] = None
+    pull_request_review_comment_data: Optional[dict] = None
+    pull_request_review_event_data: Optional[dict] = None
+    fork_data: Optional[dict] = None
+    push_data: Optional[dict] = None
+    watch_data: Optional[dict] = None
+    member_data: Optional[dict] = None
+    summary: Optional[str] = None
 
     def __init__(self, raw) -> None:
         data = {"raw": raw}

@@ -37,13 +37,13 @@ def get_file_paths_by_prefix(prefix):
 
 class Playlist(BaseModel):
     raw: dict
-    code: Optional[str]
-    title: Optional[str]
-    is_visible: Optional[bool]
-    date_tz: Optional[datetime]
-    update_date_tz: Optional[datetime]
-    url: Optional[str]
-    playlist_items: Optional[list]
+    code: Optional[str] = None
+    title: Optional[str] = None
+    is_visible: Optional[bool] = None
+    date_tz: Optional[datetime] = None
+    update_date_tz: Optional[datetime] = None
+    url: Optional[str] = None
+    playlist_items: Optional[list] = None
 
     def __init__(self, header, items):
         data = {"raw": {"header": header, "items": items}}
@@ -78,10 +78,10 @@ class Playlist(BaseModel):
 
 class Subscriptions(BaseModel):
     raw: dict
-    id: Optional[str]
-    url: Optional[str]
-    title: Optional[str]
-    description: Optional[str]
+    id: Optional[str] = None
+    url: Optional[str] = None
+    title: Optional[str] = None
+    description: Optional[str] = None
 
     def __init__(self, raw):
         data = {"raw": raw}
@@ -95,7 +95,7 @@ class Subscriptions(BaseModel):
 class Search(BaseModel):
     raw: dict
     search: str
-    product: Optional[str]
+    product: Optional[str] = None
     date_tz: datetime
 
     def __init__(self, raw):

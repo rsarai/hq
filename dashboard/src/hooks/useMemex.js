@@ -2,7 +2,6 @@ import React from 'react';
 import { useInfiniteQuery } from 'react-query';
 import axios from 'utils/axios';
 
-
 export function useNodesInfinity(queryParams) {
   return useInfiniteQuery(['infinite-nodes', queryParams], useLogs, {
     refetchOnWindowFocus: false,

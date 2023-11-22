@@ -23,27 +23,27 @@ def get_file_paths():
 
 
 class Event(BaseModel):
-    raw: Optional[dict]
+    raw: Optional[dict] = None
     duration: Optional[str] = None
-    end_time: Optional[datetime]
-    begin: Optional[datetime]
-    begin_precision: Optional[str]
-    status: Optional[str]
+    end_time: Optional[datetime] = None
+    begin: Optional[datetime] = None
+    begin_precision: Optional[str] = None
+    status: Optional[str] = None
     classification: Optional[str] = None
     organizer: Optional[str] = None
-    uid: Optional[str]
-    description: Optional[str]
-    created: Optional[datetime]
-    last_modified: Optional[datetime]
+    uid: Optional[str] = None
+    description: Optional[str] = None
+    created: Optional[datetime] = None
+    last_modified: Optional[datetime] = None
     location: Optional[str] = ''
     url: Optional[str] = None
     transparent: Optional[bool] = False
     alarms: Optional[list] = []
-    attendees: Optional[Set] = set()
-    categories: Optional[Set] = set()
+    attendees: Optional[list] = []
+    categories: Optional[list] = []
     geo: Optional[str] = None
-    name: Optional[str]
-    tz: Optional[Any]
+    name: Optional[str] = None
+    tz: Optional[Any] = None
 
 
     def __init__(__pydantic_self__, **data: Any) -> None:

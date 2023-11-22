@@ -26,10 +26,10 @@ def get_file_paths():
 
 class Mood(BaseModel):
     raw: dict
-    note: Optional[str]
-    things_i_did: Optional[str]
-    mood: Optional[str]
-    date_tz: Optional[datetime]
+    note: Optional[str] = None
+    things_i_did: Optional[str] = None
+    mood: Optional[str] = None
+    date_tz: Optional[datetime] = None
 
     def __init__(self, raw):
         data = {"raw": raw}

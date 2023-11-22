@@ -46,19 +46,19 @@ def get_recent_file():
 
 class TimeEntry(BaseModel):
     raw: dict
-    id: Optional[int]
-    guid: Optional[str]
-    start: Optional[datetime]
-    stop: Optional[datetime]
-    duration: Optional[int]
-    human_time_duration: Optional[str]
-    description: Optional[str]
-    duronly: Optional[bool]
-    tags: Optional[list]
-    at: Optional[datetime]
-    project_name: Optional[str]
-    project_id: Optional[int]
-    project_is_active: Optional[bool]
+    id: Optional[int] = None
+    guid: Optional[str] = None
+    start: Optional[datetime] = None
+    stop: Optional[datetime] = None
+    duration: Optional[int] = None
+    human_time_duration: Optional[str] = None
+    description: Optional[str] = None
+    duronly: Optional[bool] = None
+    tags: Optional[list] = None
+    at: Optional[datetime] = None
+    project_name: Optional[str] = None
+    project_id: Optional[int] = None
+    project_is_active: Optional[bool] = None
 
     def __init__(self, raw, projects) -> None:
         data = {"raw": raw}

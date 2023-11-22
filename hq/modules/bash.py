@@ -13,10 +13,10 @@ timezone = pytz.timezone("America/Recife")
 
 class Command(BaseModel):
     raw: str
-    host: Optional[str]
-    folder: Optional[str]
-    cmd: Optional[str]
-    date_tz: Optional[datetime]
+    host: Optional[str] = None
+    folder: Optional[str] = None
+    cmd: Optional[str] = None
+    date_tz: Optional[datetime] = None
 
     def __init__(self, raw):
         raw = raw
