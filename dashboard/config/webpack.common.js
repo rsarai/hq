@@ -91,5 +91,8 @@ module.exports = {
   resolve: {
     modules: ['node_modules', 'src'],
     extensions: ['.js', '.jsx'],
+    alias: {
+      '@mui/styled-engine': '@mui/styled-engine-sc',
+    },
   },
-}
+};

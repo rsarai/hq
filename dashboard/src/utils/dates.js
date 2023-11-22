@@ -23,8 +23,10 @@ export function fromMillisToTimeSeconds(milliseconds, timezone) {
 }
 
 export function getDateFromEvent(event) {
-  return fromMillisToDateShort(
-    event.datetime.$date,
-    event.timezone
-  ).toLocaleString(DateTime.TIME_24_WITH_SECONDS);
+  if (event.datetime) {
+    return fromMillisToDateShort(
+      event.datetime.$date,
+      event.timezone
+    ).toLocaleString(DateTime.TIME_24_WITH_SECONDS);
+  }
 }

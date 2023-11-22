@@ -8,6 +8,8 @@ from bson import json_util
 from pymongo import MongoClient
 import pymongo
 
+from hq.routines.manager import ImportManager
+
 
 app = Flask(__name__)
 
@@ -62,6 +64,14 @@ def retrieve():
         next_page_number = None
 
     response = jsonify(results=parse_json(list(data)), count=count, next_page_number=next_page_number)
+    # Enable Access-Control-Allow-Originn
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
+
+
+@app.route('/api/providers/', methods=['GET'])
+def retrieve_providers():
+    response = jsonify(results=ImportManager.available_providers())
     # Enable Access-Control-Allow-Originn
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response

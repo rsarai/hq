@@ -63,7 +63,7 @@ def process_moods(data_iterable=None):
         data["timestamp_utc"] = str(mood.date_tz.astimezone(pytz.utc).timestamp())
         data["timezone"] = "America/Recife"
         data["device_name"] = "Galaxy S10"
-        data["summary"] = f"Rated the day as {mood} on daylio"
+        data["summary"] = f"Rated the day as {mood.mood} and did \"{mood.things_i_did}\" on daylio"
         del data["date_tz"]
         yield data
 

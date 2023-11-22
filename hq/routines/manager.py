@@ -34,6 +34,24 @@ class ImportManager:
     state_file: str = '.db_v2.json'
     working_files: List = field(default_factory=list)
 
+    @classmethod
+    def available_providers(cls):
+        return [
+            {"label": "Bash", "value": "bash"},
+            {"label": "Habits", "value": "habits"},
+            {"label": "Daylio", "value": "daylio"},
+            {"label": "Chrome", "value": "google chrome"},
+            {"label": "Toggl", "value": "toggl"},
+            {"label": "Github", "value": "github"},
+            {"label": "Rescuetime", "value": "rescuetime"},
+            {"label": "Nubank", "value": "nubank"},
+            {"label": "Google takeout calendar", "value": "google takeout calendar"},
+            {"label": "Google takeout maps", "value": "google takeout maps"},
+            {"label": "Google takeout my activity", "value": "google takeout my activity"},
+            {"label": "Play store", "value": "play store"},
+            {"label": "Wakatime", "value": "wakatime"},
+        ]
+
     def available_importers(self):
         return f"""
             bash = {self.has_bash}
